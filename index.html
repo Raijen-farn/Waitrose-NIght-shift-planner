@@ -1,228 +1,410 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="Night Shift"/>
-<title>Waitrose Night Shift Planner</title>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<style>
-#loading { position:fixed; inset:0; background:#1c4732; display:flex; align-items:center; justify-content:center; z-index:9999; }
-#loading div { color:#c8e32a; font-size:18px; font-weight:700; font-family:sans-serif; }
-</style>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #f4f4f4; font-family: -apple-system, 'Inter', sans-serif; }
-  input, button, select { font-family: inherit; outline: none; }
-  input[type=text], input[type=number], input[type=date] { font-size: 16px !important; }
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
-  .chip { transition: all .12s; cursor: pointer; }
-  .fade { animation: fi .15s ease; }
-  @keyframes fi { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:none; } }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Night Shift" />
+  <title>Waitrose Night Shift Planner</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f4f4f4; font-family: -apple-system, 'Inter', sans-serif; }
+    input, button, select { font-family: inherit; outline: none; }
+    input[type=text], input[type=number], input[type=date] { font-size: 16px !important; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+    .chip { transition: all .12s; cursor: pointer; }
+    .fade { animation: fi .15s ease; }
+    @keyframes fi { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:none; } }
+    #loading {
+      position: fixed; inset: 0; background: #1c4732;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px; z-index: 9999;
+    }
+    #loading h2 { color: #fff; font-size: 22px; font-weight: 700; font-family: sans-serif; }
+    #loading p { color: #c8e32a; font-size: 14px; font-family: sans-serif; text-align: center; padding: 0 20px; }
+  </style>
 </head>
 <body>
-<div id="loading"><div>Loading Night Shift Planner...</div></div>
-<div id="root"></div>
-<script type="text/babel" data-presets="react">
-const SHEET_URL = "https://script.google.com/macros/s/AKfycby64LCZMvIMQhLaEsbEJt9dac_mEEnQKZnYNptuROBpK7zpFGDS-Ncz8QDvtLVvV5af/exec";
+  <div id="loading">
+    <h2>Night Shift Planner</h2>
+    <p>Loading...</p>
+  </div>
+  <div id="root"></div>
 
-const PARTNERS = [
-  { name:"Warren",  h:[9,9.5], pm:[180,210] }, { name:"Syed",    h:[9,9.5], pm:[180,210] },
-  { name:"Jenish",  h:[9,9.5], pm:[180,210] }, { name:"Lewis",   h:[9,9.5], pm:[180,210] },
-  { name:"Robyn",   h:[9,9.5], pm:[180,210] }, { name:"James",   h:[9,9.5], pm:[180,210] },
-  { name:"Maria",   h:[8.5],   pm:[180,210] }, { name:"Wayne",   h:[3,6],   pm:[90]       },
-  { name:"David",   h:[7.5],   pm:[50]      }, { name:"Rob",     h:[10],    pm:[240]      },
-  { name:"Arun",    h:[9,9.5], pm:[180,210] }, { name:"Nana",    h:[8],     pm:[180,210]  },
-  { name:"Darren",  h:[9,9.5], pm:[180,210] }, { name:"Maxime",  h:[8.5],   pm:[180,210]  },
-  { name:"Ahmad",   h:[9,9.5], pm:[180,210] }, { name:"Renin",   h:[9,9.5], pm:[180,210]  },
-  { name:"Deji",    h:[6.5],   pm:[60]      }, { name:"Xander",  h:[9,9.5], pm:[180,210]  },
-  { name:"Sephora", h:[9,9.5], pm:[180,210] }, { name:"Tina",    h:[9,9.5], pm:[180,210]  },
-  { name:"Ninad",   h:[9,9.5], pm:[180,210] }, { name:"Frans",   h:[9,9.5], pm:[180,210]  },
-  { name:"David O", h:[9,9.5], pm:[180,210] }, { name:"Shrinit", h:[9],     pm:[180,210]  },
-];
+  <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script>
+    if (typeof React === 'undefined') {
+      document.querySelector('#loading p').textContent = 'Failed to load React. Please check your internet connection and refresh.';
+    } else {
+      (function() {
+        var SHEET_URL = "https://script.google.com/macros/s/AKfycby64LCZMvIMQhLaEsbEJt9dac_mEEnQKZnYNptuROBpK7zpFGDS-Ncz8QDvtLVvV5af/exec";
+        var useState = React.useState;
+        var useEffect = React.useEffect;
+        var useMemo = React.useMemo;
+        var useRef = React.useRef;
 
-const AMBIENT = [
-  "Baby","Beers","Biscuits","Cereal","Free From","Confectionery",
-  "Cooks Ingredients","Crisps","Drinks","Health & Beauty Care",
-  "Homebaking","Household & Pets","Love Life","Oils","Paperware",
-  "Pasta, Pasta Sauces & Rice","Spirits","Tea & Coffee","Tinned",
-  "World Cuisine","Wines","Canned Fruits & Preserves",
-];
-const FRESH = ["Fruit & Veg","Meat","Fish","Chilled","Bread"];
-
-const RATES = { cases: 1, units: 9 };
+const PARTNERS = [{
+  name: "Warren",
+  h: [9, 9.5],
+  pm: [180, 210]
+}, {
+  name: "Syed",
+  h: [9, 9.5],
+  pm: [180, 210]
+}, {
+  name: "Jenish",
+  h: [9, 9.5],
+  pm: [180, 210]
+}, {
+  name: "Lewis",
+  h: [9, 9.5],
+  pm: [180, 210]
+}, {
+  name: "Robyn",
+  h: [9, 9.5],
+  pm: [180, 210]
+}, {
+  name: "James",
+  h: [9, 9.5],
+  pm: [180, 210]
+}, {
+  name: "Maria",
+  h: [8.5],
+  pm: [180, 210]
+}, {
+  name: "Wayne",
+  h: [3, 6],
+  pm: [90]
+}, {
+  name: "David",
+  h: [7.5],
+  pm: [50]
+}, {
+  name: "Rob",
+  h: [10],
+  pm: [240]
+}, {
+  name: "Arun",
+  h: [9, 9.5],
+  pm: [180, 210]
+}, {
+  name: "Nana",
+  h: [8],
+  pm: [180, 210]
+}, {
+  name: "Darren",
+  h: [9, 9.5],
+  pm: [180, 210]
+}, {
+  name: "Maxime",
+  h: [8.5],
+  pm: [180, 210]
+}, {
+  name: "Ahmad",
+  h: [9, 9.5],
+  pm: [180, 210]
+}, {
+  name: "Renin",
+  h: [9, 9.5],
+  pm: [180, 210]
+}, {
+  name: "Deji",
+  h: [6.5],
+  pm: [60]
+}, {
+  name: "Xander",
+  h: [9, 9.5],
+  pm: [180, 210]
+}, {
+  name: "Sephora",
+  h: [9, 9.5],
+  pm: [180, 210]
+}, {
+  name: "Tina",
+  h: [9, 9.5],
+  pm: [180, 210]
+}, {
+  name: "Ninad",
+  h: [9, 9.5],
+  pm: [180, 210]
+}, {
+  name: "Frans",
+  h: [9, 9.5],
+  pm: [180, 210]
+}, {
+  name: "David O",
+  h: [9, 9.5],
+  pm: [180, 210]
+}, {
+  name: "Shrinit",
+  h: [9],
+  pm: [180, 210]
+}];
+const AMBIENT = ["Baby", "Beers", "Biscuits", "Cereal", "Free From", "Confectionery", "Cooks Ingredients", "Crisps", "Drinks", "Health & Beauty Care", "Homebaking", "Household & Pets", "Love Life", "Oils", "Paperware", "Pasta, Pasta Sauces & Rice", "Spirits", "Tea & Coffee", "Tinned", "World Cuisine", "Wines", "Canned Fruits & Preserves"];
+const FRESH = ["Fruit & Veg", "Meat", "Fish", "Chilled", "Bread"];
+const RATES = {
+  cases: 1,
+  units: 9
+};
 const ECOMM_RATE = 230 / 60;
 const SPOT_RATE = 2.3 / 60;
-
 const C = {
-  green:"#1c4732", mid:"#245c3f", light:"#2e7a52",
-  lime:"#c8e32a", limeDark:"#a8c220",
-  bg:"#f4f4f4", card:"#ffffff", text:"#1c1c1c",
-  muted:"#666", dim:"#aaa", border:"#e0e0e0",
-  teal:"#1c7a5a", red:"#cc3333", amber:"#e07800",
+  green: "#1c4732",
+  mid: "#245c3f",
+  light: "#2e7a52",
+  lime: "#c8e32a",
+  limeDark: "#a8c220",
+  bg: "#f4f4f4",
+  card: "#ffffff",
+  text: "#1c1c1c",
+  muted: "#666",
+  dim: "#aaa",
+  border: "#e0e0e0",
+  teal: "#1c7a5a",
+  red: "#cc3333",
+  amber: "#e07800"
 };
-
 const fmt = m => {
   m = Math.abs(Math.round(m));
-  const h = Math.floor(m/60), min = m%60;
+  const h = Math.floor(m / 60),
+    min = m % 60;
   if (!h) return `${min}m`;
   if (!min) return `${h}h`;
   return `${h}h ${min}m`;
 };
 const qn = v => parseInt(v) || 0;
-function RowInput({ initialValue, onCommit, style }) {
+function RowInput({
+  initialValue,
+  onCommit,
+  style
+}) {
   const ref = useRef(null);
   const focused = useRef(false);
-
   useEffect(() => {
     if (ref.current && !focused.current) {
       ref.current.value = initialValue || "";
     }
   }, [initialValue]);
-
-  return (
-    <input
-      ref={ref}
-      type="text"
-      inputMode="numeric"
-      pattern="[0-9]*"
-      defaultValue={initialValue || ""}
-      onFocus={() => { focused.current = true; }}
-      onBlur={e => {
-        focused.current = false;
-        const v = e.target.value.replace(/\D/g, "");
-        e.target.value = v;
-        onCommit(v);
-      }}
-      style={style}
-    />
-  );
+  return /*#__PURE__*/React.createElement("input", {
+    ref: ref,
+    type: "text",
+    inputMode: "numeric",
+    pattern: "[0-9]*",
+    defaultValue: initialValue || "",
+    onFocus: () => {
+      focused.current = true;
+    },
+    onBlur: e => {
+      focused.current = false;
+      const v = e.target.value.replace(/\D/g, "");
+      e.target.value = v;
+      onCommit(v);
+    },
+    style: style
+  });
 }
-function DepRow({ row, rate, onCommit, onRemove, accent }) {
+function DepRow({
+  row,
+  rate,
+  onCommit,
+  onRemove,
+  accent
+}) {
   const qty = qn(row.qty);
   const mins = qty > 0 ? Math.ceil(qty / rate) : 0;
   const active = qty > 0;
-  const bg = active ? (accent || "#f0f7f3") : C.bg;
-  const border = active ? (accent ? "#2e7a52" : C.green) : C.border;
-
-  return (
-    <div style={{ display:"grid", gridTemplateColumns:"1fr 80px 90px 26px", gap:8, marginBottom:6, alignItems:"stretch" }}>
-      <div style={{ background:bg, border:`1.5px solid ${border}`, borderRadius:8, padding:"9px 11px", fontSize:13, color:C.text, lineHeight:1.4, wordBreak:"break-word", display:"flex", alignItems:"center" }}>
-        {row.dept}
-      </div>
-      <RowInput
-        initialValue={row.qty}
-        onCommit={onCommit}
-        style={{ background:bg, border:`1.5px solid ${border}`, color:C.text, borderRadius:8, padding:"9px 6px", fontSize:16, fontFamily:"inherit", width:"100%", textAlign:"center", fontWeight:active?600:400 }}
-      />
-      <div style={{ background:C.bg, border:`1.5px solid ${C.border}`, borderRadius:8, fontSize:13, color:active?C.teal:C.dim, textAlign:"center", display:"flex", alignItems:"center", justifyContent:"center", fontWeight:active?600:400 }}>
-        {active ? fmt(mins) : "—"}
-      </div>
-      <button onClick={onRemove} style={{ background:"none", border:"none", color:C.dim, cursor:"pointer", fontSize:18, padding:0, display:"flex", alignItems:"center", justifyContent:"center" }}>×</button>
-    </div>
-  );
+  const bg = active ? accent || "#f0f7f3" : C.bg;
+  const border = active ? accent ? "#2e7a52" : C.green : C.border;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 80px 90px 26px",
+      gap: 8,
+      marginBottom: 6,
+      alignItems: "stretch"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: bg,
+      border: `1.5px solid ${border}`,
+      borderRadius: 8,
+      padding: "9px 11px",
+      fontSize: 13,
+      color: C.text,
+      lineHeight: 1.4,
+      wordBreak: "break-word",
+      display: "flex",
+      alignItems: "center"
+    }
+  }, row.dept), /*#__PURE__*/React.createElement(RowInput, {
+    initialValue: row.qty,
+    onCommit: onCommit,
+    style: {
+      background: bg,
+      border: `1.5px solid ${border}`,
+      color: C.text,
+      borderRadius: 8,
+      padding: "9px 6px",
+      fontSize: 16,
+      fontFamily: "inherit",
+      width: "100%",
+      textAlign: "center",
+      fontWeight: active ? 600 : 400
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.bg,
+      border: `1.5px solid ${C.border}`,
+      borderRadius: 8,
+      fontSize: 13,
+      color: active ? C.teal : C.dim,
+      textAlign: "center",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontWeight: active ? 600 : 400
+    }
+  }, active ? fmt(mins) : "—"), /*#__PURE__*/React.createElement("button", {
+    onClick: onRemove,
+    style: {
+      background: "none",
+      border: "none",
+      color: C.dim,
+      cursor: "pointer",
+      fontSize: 18,
+      padding: 0,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }
+  }, "×"));
 }
-function Toggle({ val, onChange, options, color = "#2980b9" }) {
-  return (
-    <div style={{ display:"flex", gap:6 }}>
-      {options.map(o => (
-        <button key={String(o.v)} onClick={() => onChange(o.v)}
-          style={{ flex:1, background:val===o.v?color:"#fff", border:`1.5px solid ${val===o.v?color:C.border}`, color:val===o.v?"#fff":C.text, borderRadius:8, padding:"7px 10px", fontSize:12, fontWeight:val===o.v?700:400, cursor:"pointer", fontFamily:"inherit", minWidth:44 }}>
-          {o.l}
-        </button>
-      ))}
-    </div>
-  );
+function Toggle({
+  val,
+  onChange,
+  options,
+  color = "#2980b9"
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6
+    }
+  }, options.map(o => /*#__PURE__*/React.createElement("button", {
+    key: String(o.v),
+    onClick: () => onChange(o.v),
+    style: {
+      flex: 1,
+      background: val === o.v ? color : "#fff",
+      border: `1.5px solid ${val === o.v ? color : C.border}`,
+      color: val === o.v ? "#fff" : C.text,
+      borderRadius: 8,
+      padding: "7px 10px",
+      fontSize: 12,
+      fontWeight: val === o.v ? 700 : 400,
+      cursor: "pointer",
+      fontFamily: "inherit",
+      minWidth: 44
+    }
+  }, o.l)));
 }
-function SimpleInput({ value, onChange, placeholder, style }) {
+function SimpleInput({
+  value,
+  onChange,
+  placeholder,
+  style
+}) {
   const ref = useRef(null);
   const focused = useRef(false);
-
   useEffect(() => {
     if (ref.current && !focused.current) {
       ref.current.value = value || "";
     }
   }, [value]);
-
-  return (
-    <input
-      ref={ref}
-      type="text"
-      inputMode="numeric"
-      pattern="[0-9]*"
-      defaultValue={value || ""}
-      placeholder={placeholder}
-      onFocus={() => { focused.current = true; }}
-      onBlur={e => {
-        focused.current = false;
-        const v = e.target.value.replace(/\D/g, "");
-        e.target.value = v;
-        onChange(v);
-      }}
-      style={style}
-    />
-  );
+  return /*#__PURE__*/React.createElement("input", {
+    ref: ref,
+    type: "text",
+    inputMode: "numeric",
+    pattern: "[0-9]*",
+    defaultValue: value || "",
+    placeholder: placeholder,
+    onFocus: () => {
+      focused.current = true;
+    },
+    onBlur: e => {
+      focused.current = false;
+      const v = e.target.value.replace(/\D/g, "");
+      e.target.value = v;
+      onChange(v);
+    },
+    style: style
+  });
 }
 function App() {
-  const [date, setDate]           = useState(() => new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [stockType, setStockType] = useState("cases");
-  const [aRows, setARows] = useState(AMBIENT.map(d => ({ dept:d, qty:"" })));
-  const [fRows, setFRows] = useState(FRESH.map(d  => ({ dept:d, qty:"" })));
-  const [sel,   setSel]   = useState({});
+  const [aRows, setARows] = useState(AMBIENT.map(d => ({
+    dept: d,
+    qty: ""
+  })));
+  const [fRows, setFRows] = useState(FRESH.map(d => ({
+    dept: d,
+    qty: ""
+  })));
+  const [sel, setSel] = useState({});
   const [selPm, setSelPm] = useState({});
-  const [spotUnits,   setSpotUnits]   = useState("");
-  const [lehPallets,  setLehPallets]  = useState("");
-  const [w3Cages,     setW3Cages]     = useState("");
-  const [l1On,        setL1On]        = useState(false);
-  const [l2On,        setL2On]        = useState(false);
-  const [l1Dekit,     setL1Dekit]     = useState(false);
-  const [l2Dekit,     setL2Dekit]     = useState(false);
-  const [l1Partners,  setL1Partners]  = useState([]);
-  const [l2Partners,  setL2Partners]  = useState([]);
-  const [sandwich,    setSandwich]    = useState(false);
-  const [rmCages,     setRmCages]     = useState("");
-  const [ecommSetup,  setEcommSetup]  = useState(false);
-  const [ecommItems,  setEcommItems]  = useState("");
-  const [ecommPickers,setEcommPickers]= useState(1);
-  const [spoilage,    setSpoilage]    = useState(0);
-  const [cardboard,   setCardboard]   = useState(false);
-  const [pickup,      setPickup]      = useState(0);
-  const [drinksBack,  setDrinksBack]  = useState(false);
-  const [crispsBack,  setCrispsBack]  = useState(false);
-  const [ambFaceup,   setAmbFaceup]   = useState(false);
-  const [chlFaceup,   setChlFaceup]   = useState(false);
-  const [clearRoutes,   setClearRoutes]   = useState(false);
-  const [clearFloor,    setClearFloor]    = useState(false);
-  const [frozenCages,        setFrozenCages]        = useState("");
-  const [flowersHort,        setFlowersHort]        = useState(false);
-  const [tidyFrv,            setTidyFrv]            = useState(false);
-  const [shiftAdmin,         setShiftAdmin]         = useState(false);
-  const [exceptions,         setExceptions]         = useState(false);
-  const [dekitTime,          setDekitTime]          = useState(0);
+  const [spotUnits, setSpotUnits] = useState("");
+  const [lehPallets, setLehPallets] = useState("");
+  const [w3Cages, setW3Cages] = useState("");
+  const [l1On, setL1On] = useState(false);
+  const [l2On, setL2On] = useState(false);
+  const [l1Dekit, setL1Dekit] = useState(false);
+  const [l2Dekit, setL2Dekit] = useState(false);
+  const [l1Partners, setL1Partners] = useState([]);
+  const [l2Partners, setL2Partners] = useState([]);
+  const [sandwich, setSandwich] = useState(false);
+  const [rmCages, setRmCages] = useState("");
+  const [ecommSetup, setEcommSetup] = useState(false);
+  const [ecommItems, setEcommItems] = useState("");
+  const [ecommPickers, setEcommPickers] = useState(1);
+  const [spoilage, setSpoilage] = useState(0);
+  const [cardboard, setCardboard] = useState(false);
+  const [pickup, setPickup] = useState(0);
+  const [drinksBack, setDrinksBack] = useState(false);
+  const [crispsBack, setCrispsBack] = useState(false);
+  const [ambFaceup, setAmbFaceup] = useState(false);
+  const [chlFaceup, setChlFaceup] = useState(false);
+  const [clearRoutes, setClearRoutes] = useState(false);
+  const [clearFloor, setClearFloor] = useState(false);
+  const [frozenCages, setFrozenCages] = useState("");
+  const [flowersHort, setFlowersHort] = useState(false);
+  const [tidyFrv, setTidyFrv] = useState(false);
+  const [shiftAdmin, setShiftAdmin] = useState(false);
+  const [exceptions, setExceptions] = useState(false);
+  const [dekitTime, setDekitTime] = useState(0);
   const [multimediaPartners, setMultimediaPartners] = useState(0);
-  const [dekitOption,   setDekitOption]   = useState(0);
+  const [dekitOption, setDekitOption] = useState(0);
   const [multiPartners, setMultiPartners] = useState("");
-  const [saveStatus,  setSaveStatus]  = useState("saved");
-  const [showBackup,  setShowBackup]  = useState(false);
+  const [saveStatus, setSaveStatus] = useState("saved");
+  const [showBackup, setShowBackup] = useState(false);
   const [restoreText, setRestoreText] = useState("");
-  const [restoreMsg,  setRestoreMsg]  = useState("");
-  const [lastSaved,   setLastSaved]   = useState("");
-  const [confirmReset,setConfirmReset]= useState(false);
+  const [restoreMsg, setRestoreMsg] = useState("");
+  const [lastSaved, setLastSaved] = useState("");
+  const [confirmReset, setConfirmReset] = useState(false);
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     const saveNow = () => {
       try {
         const payload = localStorage.getItem("wnf");
         if (payload) {
-          try { sessionStorage.setItem("wnf", payload); } catch(_) {}
+          try {
+            sessionStorage.setItem("wnf", payload);
+          } catch (_) {}
         }
-      } catch(_) {}
+      } catch (_) {}
     };
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") saveNow();
@@ -235,195 +417,276 @@ function App() {
       window.removeEventListener("beforeunload", saveNow);
     };
   }, []);
-
-  useEffect(() => { (async () => {
-    try {
-      let raw = null;
-      // Try Google Sheets first — survives everything
+  useEffect(() => {
+    (async () => {
       try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycby64LCZMvIMQhLaEsbEJt9dac_mEEnQKZnYNptuROBpK7zpFGDS-Ncz8QDvtLVvV5af/exec");
-        const txt = await res.text();
-        if (txt && txt.startsWith("{")) raw = txt;
-      } catch(_) {}
-      // Fallback to localStorage
-      if (!raw) { try { raw = localStorage.getItem("wnf") || localStorage.getItem("wnf-b"); } catch(_) {} }
-      if (raw) {
-      const d = JSON.parse(raw);
-      if (d.date) setDate(d.date);
-      if (d.stockType) setStockType(d.stockType);
-      if (d.aRows) setARows(AMBIENT.map(dept => ({ dept, qty: d.aRows.find(r=>r.dept===dept)?.qty ?? "" })));
-      if (d.fRows) setFRows(FRESH.map(dept   => ({ dept, qty: d.fRows.find(r=>r.dept===dept)?.qty ?? "" })));
-      if (d.sel)   setSel(d.sel);
-      if (d.selPm) setSelPm(d.selPm);
-      if (d.spotUnits  != null) setSpotUnits(d.spotUnits);
-      if (d.lehPallets != null) setLehPallets(d.lehPallets);
-      if (d.w3Cages    != null) setW3Cages(d.w3Cages);
-      if (d.l1On       != null) setL1On(d.l1On);
-      if (d.l2On       != null) setL2On(d.l2On);
-      if (d.l1Dekit    != null) setL1Dekit(d.l1Dekit);
-      if (d.l2Dekit    != null) setL2Dekit(d.l2Dekit);
-      if (d.l1Partners) setL1Partners(d.l1Partners);
-      if (d.l2Partners) setL2Partners(d.l2Partners);
-      if (d.sandwich   != null) setSandwich(d.sandwich);
-      if (d.rmCages    != null) setRmCages(d.rmCages);
-      if (d.ecommSetup != null) setEcommSetup(d.ecommSetup);
-      if (d.ecommItems != null) setEcommItems(d.ecommItems);
-      if (d.ecommPickers!=null) setEcommPickers(d.ecommPickers);
-      if (d.spoilage   != null) setSpoilage(d.spoilage);
-      if (d.cardboard  != null) setCardboard(d.cardboard);
-      if (d.pickup     != null) setPickup(d.pickup);
-      if (d.drinksBack != null) setDrinksBack(d.drinksBack);
-      if (d.crispsBack != null) setCrispsBack(d.crispsBack);
-      if (d.ambFaceup  != null) setAmbFaceup(d.ambFaceup);
-      if (d.chlFaceup  != null) setChlFaceup(d.chlFaceup);
-      if (d.clearRoutes!= null) setClearRoutes(d.clearRoutes);
-      if (d.clearFloor   != null) setClearFloor(d.clearFloor);
-      if (d.frozenCages  != null) setFrozenCages(d.frozenCages);
-      if (d.dekitTime    != null) setDekitTime(d.dekitTime);
-      if (d.multimediaPartners != null) setMultimediaPartners(d.multimediaPartners);
-      if (d.flowersHort  != null) setFlowersHort(d.flowersHort);
-      if (d.exceptions   != null) setExceptions(d.exceptions);
-      if (d.tidyFrv      != null) setTidyFrv(d.tidyFrv);
-      if (d.shiftAdmin   != null) setShiftAdmin(d.shiftAdmin);
-      }
-    } catch(_) {}
-    setLoaded(true);
-  })(); }, []);
+        let raw = null;
+        // Try Google Sheets first — survives everything
+        try {
+          const res = await fetch("https://script.google.com/macros/s/AKfycby64LCZMvIMQhLaEsbEJt9dac_mEEnQKZnYNptuROBpK7zpFGDS-Ncz8QDvtLVvV5af/exec");
+          const txt = await res.text();
+          if (txt && txt.startsWith("{")) raw = txt;
+        } catch (_) {}
+        // Fallback to localStorage
+        if (!raw) {
+          try {
+            raw = localStorage.getItem("wnf") || localStorage.getItem("wnf-b");
+          } catch (_) {}
+        }
+        if (raw) {
+          const d = JSON.parse(raw);
+          if (d.date) setDate(d.date);
+          if (d.stockType) setStockType(d.stockType);
+          if (d.aRows) setARows(AMBIENT.map(dept => ({
+            dept,
+            qty: d.aRows.find(r => r.dept === dept)?.qty ?? ""
+          })));
+          if (d.fRows) setFRows(FRESH.map(dept => ({
+            dept,
+            qty: d.fRows.find(r => r.dept === dept)?.qty ?? ""
+          })));
+          if (d.sel) setSel(d.sel);
+          if (d.selPm) setSelPm(d.selPm);
+          if (d.spotUnits != null) setSpotUnits(d.spotUnits);
+          if (d.lehPallets != null) setLehPallets(d.lehPallets);
+          if (d.w3Cages != null) setW3Cages(d.w3Cages);
+          if (d.l1On != null) setL1On(d.l1On);
+          if (d.l2On != null) setL2On(d.l2On);
+          if (d.l1Dekit != null) setL1Dekit(d.l1Dekit);
+          if (d.l2Dekit != null) setL2Dekit(d.l2Dekit);
+          if (d.l1Partners) setL1Partners(d.l1Partners);
+          if (d.l2Partners) setL2Partners(d.l2Partners);
+          if (d.sandwich != null) setSandwich(d.sandwich);
+          if (d.rmCages != null) setRmCages(d.rmCages);
+          if (d.ecommSetup != null) setEcommSetup(d.ecommSetup);
+          if (d.ecommItems != null) setEcommItems(d.ecommItems);
+          if (d.ecommPickers != null) setEcommPickers(d.ecommPickers);
+          if (d.spoilage != null) setSpoilage(d.spoilage);
+          if (d.cardboard != null) setCardboard(d.cardboard);
+          if (d.pickup != null) setPickup(d.pickup);
+          if (d.drinksBack != null) setDrinksBack(d.drinksBack);
+          if (d.crispsBack != null) setCrispsBack(d.crispsBack);
+          if (d.ambFaceup != null) setAmbFaceup(d.ambFaceup);
+          if (d.chlFaceup != null) setChlFaceup(d.chlFaceup);
+          if (d.clearRoutes != null) setClearRoutes(d.clearRoutes);
+          if (d.clearFloor != null) setClearFloor(d.clearFloor);
+          if (d.frozenCages != null) setFrozenCages(d.frozenCages);
+          if (d.dekitTime != null) setDekitTime(d.dekitTime);
+          if (d.multimediaPartners != null) setMultimediaPartners(d.multimediaPartners);
+          if (d.flowersHort != null) setFlowersHort(d.flowersHort);
+          if (d.exceptions != null) setExceptions(d.exceptions);
+          if (d.tidyFrv != null) setTidyFrv(d.tidyFrv);
+          if (d.shiftAdmin != null) setShiftAdmin(d.shiftAdmin);
+        }
+      } catch (_) {}
+      setLoaded(true);
+    })();
+  }, []);
   useEffect(() => {
     if (!loaded) return;
     setSaveStatus("saving");
     const t = setTimeout(() => {
       try {
         const payload = JSON.stringify({
-          date, stockType, aRows, fRows, sel, selPm, spotUnits, lehPallets, w3Cages,
-          l1On, l2On, l1Dekit, l2Dekit, l1Partners, l2Partners,
-          sandwich, rmCages, ecommSetup, ecommItems, ecommPickers,
-          spoilage, cardboard, pickup, drinksBack, crispsBack,
-          ambFaceup, chlFaceup, clearRoutes, clearFloor,
-          frozenCages, dekitTime, multimediaPartners, flowersHort, exceptions, tidyFrv, shiftAdmin,
+          date,
+          stockType,
+          aRows,
+          fRows,
+          sel,
+          selPm,
+          spotUnits,
+          lehPallets,
+          w3Cages,
+          l1On,
+          l2On,
+          l1Dekit,
+          l2Dekit,
+          l1Partners,
+          l2Partners,
+          sandwich,
+          rmCages,
+          ecommSetup,
+          ecommItems,
+          ecommPickers,
+          spoilage,
+          cardboard,
+          pickup,
+          drinksBack,
+          crispsBack,
+          ambFaceup,
+          chlFaceup,
+          clearRoutes,
+          clearFloor,
+          frozenCages,
+          dekitTime,
+          multimediaPartners,
+          flowersHort,
+          exceptions,
+          tidyFrv,
+          shiftAdmin
         });
         try {
           localStorage.setItem("wnf", payload);
           localStorage.setItem("wnf-b", payload);
           localStorage.setItem("wnf-ts", new Date().toISOString());
-        } catch(_) {}
+        } catch (_) {}
         // Save to Google Sheets
         try {
           fetch("https://script.google.com/macros/s/AKfycby64LCZMvIMQhLaEsbEJt9dac_mEEnQKZnYNptuROBpK7zpFGDS-Ncz8QDvtLVvV5af/exec", {
             method: "POST",
-            headers: { "Content-Type": "text/plain" },
+            headers: {
+              "Content-Type": "text/plain"
+            },
             body: payload
           });
-        } catch(_) {}
+        } catch (_) {}
         setSaveStatus("saved");
         setLastSaved(new Date().toLocaleTimeString());
-      } catch(_) { setSaveStatus("error"); }
+      } catch (_) {
+        setSaveStatus("error");
+      }
     }, 200);
     return () => clearTimeout(t);
-  }, [date,stockType,aRows,fRows,sel,selPm,spotUnits,lehPallets,w3Cages,
-      l1On,l2On,l1Dekit,l2Dekit,l1Partners,l2Partners,
-      sandwich,rmCages,ecommSetup,ecommItems,ecommPickers,
-      spoilage,cardboard,pickup,drinksBack,crispsBack,
-      ambFaceup,chlFaceup,clearRoutes,clearFloor,
-      frozenCages,dekitTime,multimediaPartners,flowersHort,exceptions,tidyFrv,shiftAdmin]);
+  }, [date, stockType, aRows, fRows, sel, selPm, spotUnits, lehPallets, w3Cages, l1On, l2On, l1Dekit, l2Dekit, l1Partners, l2Partners, sandwich, rmCages, ecommSetup, ecommItems, ecommPickers, spoilage, cardboard, pickup, drinksBack, crispsBack, ambFaceup, chlFaceup, clearRoutes, clearFloor, frozenCages, dekitTime, multimediaPartners, flowersHort, exceptions, tidyFrv, shiftAdmin]);
   const resetAll = () => {
-    try { localStorage.removeItem("wnf"); localStorage.removeItem("wnf-b"); } catch(_) {}
+    try {
+      localStorage.removeItem("wnf");
+      localStorage.removeItem("wnf-b");
+    } catch (_) {}
     setDate(new Date().toISOString().split("T")[0]);
-    setStockType("cases"); setSel({}); setSelPm({});
-    setARows(AMBIENT.map(d=>({dept:d,qty:""}))); setFRows(FRESH.map(d=>({dept:d,qty:""})));
-    setSpotUnits(""); setLehPallets(""); setW3Cages("");
-    setL1On(false); setL2On(false); setL1Dekit(false); setL2Dekit(false);
-    setL1Partners([]); setL2Partners([]);
-    setSandwich(false); setRmCages("");
-    setEcommSetup(false); setEcommItems(""); setEcommPickers(1);
-    setSpoilage(0); setCardboard(false); setPickup(0);
-    setDrinksBack(false); setCrispsBack(false);
-    setAmbFaceup(false); setChlFaceup(false);
-    setClearRoutes(false); setClearFloor(false);
-    setFrozenCages(""); setDekitTime(0); setMultimediaPartners(0);
-    setFlowersHort(false); setExceptions(false); setTidyFrv(false); setShiftAdmin(false);
+    setStockType("cases");
+    setSel({});
+    setSelPm({});
+    setARows(AMBIENT.map(d => ({
+      dept: d,
+      qty: ""
+    })));
+    setFRows(FRESH.map(d => ({
+      dept: d,
+      qty: ""
+    })));
+    setSpotUnits("");
+    setLehPallets("");
+    setW3Cages("");
+    setL1On(false);
+    setL2On(false);
+    setL1Dekit(false);
+    setL2Dekit(false);
+    setL1Partners([]);
+    setL2Partners([]);
+    setSandwich(false);
+    setRmCages("");
+    setEcommSetup(false);
+    setEcommItems("");
+    setEcommPickers(1);
+    setSpoilage(0);
+    setCardboard(false);
+    setPickup(0);
+    setDrinksBack(false);
+    setCrispsBack(false);
+    setAmbFaceup(false);
+    setChlFaceup(false);
+    setClearRoutes(false);
+    setClearFloor(false);
+    setFrozenCages("");
+    setDekitTime(0);
+    setMultimediaPartners(0);
+    setFlowersHort(false);
+    setExceptions(false);
+    setTidyFrv(false);
+    setShiftAdmin(false);
     setConfirmReset(false);
   };
   const rate = RATES[stockType];
   const activeP = PARTNERS.filter(p => sel[p.name]);
   const colleagues = activeP.length;
-  const teamMins = activeP.reduce((s,p) => s + sel[p.name]*60, 0);
-  const preMidMins = activeP.reduce((s,p) => s + (selPm[p.name]||0), 0);
-
-  const allRows = useMemo(() => [...aRows,...fRows], [aRows,fRows]);
-  const ambQty  = useMemo(() => aRows.reduce((s,r)=>s+qn(r.qty),0), [aRows]);
-  const freshQty= useMemo(() => fRows.reduce((s,r)=>s+qn(r.qty),0), [fRows]);
-  const totalQty= ambQty + freshQty;
-  const ambMins = Math.ceil(ambQty/rate);
-  const freshMins=Math.ceil(freshQty/rate);
-  const stockMins=ambMins+freshMins;
-
-  const spotBase  = spotUnits !== "" ? qn(spotUnits) : ambQty;
-  const spotMins  = Math.ceil(spotBase * SPOT_RATE);
-  const lehMins   = qn(lehPallets)*60;
-  const w3Mins    = qn(w3Cages)*60;
-  const l1Mins    = l1On ? l1Partners.length * (l1Dekit?60:40) : 0;
-  const l2Mins    = l2On ? l2Partners.length * (l2Dekit?60:40) : 0;
-  const lorryMins = l1Mins+l2Mins;
-  const sandMins  = sandwich?25:0;
-  const rmMins    = Math.ceil(qn(rmCages)*8.25);
-  const setupMins = ecommSetup?40:0;
-  const ecommSolo = qn(ecommItems)>0?Math.ceil(qn(ecommItems)/ECOMM_RATE):0;
-  const ecommTeam = ecommSolo>0&&ecommPickers>0?Math.ceil(ecommSolo/ecommPickers):ecommSolo;
-  const spMins    = spoilage;
-  const cardMins  = cardboard?120:0;
-  const pickMins  = pickup;
-  const drMins    = drinksBack?60:0;
-  const crMins    = crispsBack?30:0;
-  const ambFMins  = ambFaceup?600:0;
-  const chlFMins  = chlFaceup?180:0;
-  const routeMins   = clearRoutes?30:0;
-  const floorMins   = clearFloor?60:0;
-  const frozenMins    = qn(frozenCages)*60;
+  const teamMins = activeP.reduce((s, p) => s + sel[p.name] * 60, 0);
+  const preMidMins = activeP.reduce((s, p) => s + (selPm[p.name] || 0), 0);
+  const allRows = useMemo(() => [...aRows, ...fRows], [aRows, fRows]);
+  const ambQty = useMemo(() => aRows.reduce((s, r) => s + qn(r.qty), 0), [aRows]);
+  const freshQty = useMemo(() => fRows.reduce((s, r) => s + qn(r.qty), 0), [fRows]);
+  const totalQty = ambQty + freshQty;
+  const ambMins = Math.ceil(ambQty / rate);
+  const freshMins = Math.ceil(freshQty / rate);
+  const stockMins = ambMins + freshMins;
+  const spotBase = spotUnits !== "" ? qn(spotUnits) : ambQty;
+  const spotMins = Math.ceil(spotBase * SPOT_RATE);
+  const lehMins = qn(lehPallets) * 60;
+  const w3Mins = qn(w3Cages) * 60;
+  const l1Mins = l1On ? l1Partners.length * (l1Dekit ? 60 : 40) : 0;
+  const l2Mins = l2On ? l2Partners.length * (l2Dekit ? 60 : 40) : 0;
+  const lorryMins = l1Mins + l2Mins;
+  const sandMins = sandwich ? 25 : 0;
+  const rmMins = Math.ceil(qn(rmCages) * 8.25);
+  const setupMins = ecommSetup ? 40 : 0;
+  const ecommSolo = qn(ecommItems) > 0 ? Math.ceil(qn(ecommItems) / ECOMM_RATE) : 0;
+  const ecommTeam = ecommSolo > 0 && ecommPickers > 0 ? Math.ceil(ecommSolo / ecommPickers) : ecommSolo;
+  const spMins = spoilage;
+  const cardMins = cardboard ? 120 : 0;
+  const pickMins = pickup;
+  const drMins = drinksBack ? 60 : 0;
+  const crMins = crispsBack ? 30 : 0;
+  const ambFMins = ambFaceup ? 600 : 0;
+  const chlFMins = chlFaceup ? 180 : 0;
+  const routeMins = clearRoutes ? 30 : 0;
+  const floorMins = clearFloor ? 60 : 0;
+  const frozenMins = qn(frozenCages) * 60;
   const flowersHortMins = flowersHort ? 60 : 0;
-  const tidyFrvMins     = tidyFrv ? 45 : 0;
-  const shiftAdminMins  = shiftAdmin ? 20 : 0;
-  const exceptionsMins  = exceptions ? 60 : 0;
-  const dekitMins   = dekitOption>0?dekitOption:0;
-  const multiMins   = qn(multiPartners)*40;
-
-  const fixedMins = spotMins+lehMins+w3Mins+lorryMins+sandMins+rmMins+
-    setupMins+ecommSolo+spMins+cardMins+pickMins+drMins+crMins+
-    ambFMins+chlFMins+routeMins+floorMins+frozenMins+dekitMins+multiMins+flowersHortMins+exceptionsMins+tidyFrvMins+shiftAdminMins;
-  const totalNeeded = stockMins+fixedMins;
-  const slack = teamMins-totalNeeded;
-  const util  = teamMins>0?Math.min(100,Math.round(totalNeeded/teamMins*100)):0;
-  const stColor = slack<0?C.red:slack<120?C.amber:C.teal;
-  const stLabel = slack<0?"Overloaded":slack<120?"Tight":"On Track";
+  const tidyFrvMins = tidyFrv ? 45 : 0;
+  const shiftAdminMins = shiftAdmin ? 20 : 0;
+  const exceptionsMins = exceptions ? 60 : 0;
+  const dekitMins = dekitOption > 0 ? dekitOption : 0;
+  const multiMins = qn(multiPartners) * 40;
+  const fixedMins = spotMins + lehMins + w3Mins + lorryMins + sandMins + rmMins + setupMins + ecommSolo + spMins + cardMins + pickMins + drMins + crMins + ambFMins + chlFMins + routeMins + floorMins + frozenMins + dekitMins + multiMins + flowersHortMins + exceptionsMins + tidyFrvMins + shiftAdminMins;
+  const totalNeeded = stockMins + fixedMins;
+  const slack = teamMins - totalNeeded;
+  const util = teamMins > 0 ? Math.min(100, Math.round(totalNeeded / teamMins * 100)) : 0;
+  const stColor = slack < 0 ? C.red : slack < 120 ? C.amber : C.teal;
+  const stLabel = slack < 0 ? "Overloaded" : slack < 120 ? "Tight" : "On Track";
   const cloudSave = async () => {
     try {
       const payload = localStorage.getItem("wnf") || "{}";
       setRestoreMsg("Saving to cloud...");
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
-          model: "claude-sonnet-4-6", max_tokens: 50,
-          messages: [{ role: "user", content: "Store this shift data (reply only STORED): " + payload }]
+          model: "claude-sonnet-4-6",
+          max_tokens: 50,
+          messages: [{
+            role: "user",
+            content: "Store this shift data (reply only STORED): " + payload
+          }]
         })
       });
       const d = await res.json();
       if (d?.content?.[0]?.text) {
         setRestoreMsg("✓ Saved to cloud!");
         setTimeout(() => setRestoreMsg(""), 3000);
-      } else { setRestoreMsg("✗ Cloud save failed"); }
-    } catch(e) { setRestoreMsg("✗ " + e.message); }
+      } else {
+        setRestoreMsg("✗ Cloud save failed");
+      }
+    } catch (e) {
+      setRestoreMsg("✗ " + e.message);
+    }
   };
-
   const cloudLoad = async () => {
     try {
       setRestoreMsg("Loading from cloud...");
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
-          model: "claude-sonnet-4-6", max_tokens: 8000,
-          messages: [{ role: "user", content: "Retrieve the last stored shift data JSON" }]
+          model: "claude-sonnet-4-6",
+          max_tokens: 8000,
+          messages: [{
+            role: "user",
+            content: "Retrieve the last stored shift data JSON"
+          }]
         })
       });
       const d = await res.json();
@@ -434,11 +697,16 @@ function App() {
           localStorage.setItem("wnf", txt);
           setRestoreMsg("✓ Loaded! Reloading...");
           setTimeout(() => window.location.reload(), 800);
-        } catch(_) { setRestoreMsg("✗ Invalid data"); }
-      } else { setRestoreMsg("✗ No data found"); }
-    } catch(e) { setRestoreMsg("✗ " + e.message); }
+        } catch (_) {
+          setRestoreMsg("✗ Invalid data");
+        }
+      } else {
+        setRestoreMsg("✗ No data found");
+      }
+    } catch (e) {
+      setRestoreMsg("✗ " + e.message);
+    }
   };
-
   const doRestore = () => {
     try {
       let txt = restoreText.trim();
@@ -448,26 +716,55 @@ function App() {
       localStorage.setItem("wnf", txt);
       setRestoreMsg("✓ Restored! Reloading...");
       setTimeout(() => window.location.reload(), 800);
-    } catch(_) { setRestoreMsg("✗ Invalid backup data"); }
+    } catch (_) {
+      setRestoreMsg("✗ Invalid backup data");
+    }
   };
-
   const copyBackup = () => {
     const raw = localStorage.getItem("wnf") || "{}";
     setRestoreText(raw);
     setShowBackup(true);
   };
-
-
   const syncSave = (overrides = {}) => {
     try {
       const payload = JSON.stringify({
-        date, stockType, aRows, fRows, sel, selPm, spotUnits, lehPallets, w3Cages,
-        l1On, l2On, l1Dekit, l2Dekit, l1Partners, l2Partners,
-        sandwich, rmCages, ecommSetup, ecommItems, ecommPickers,
-        spoilage, cardboard, pickup, drinksBack, crispsBack,
-        ambFaceup, chlFaceup, clearRoutes, clearFloor,
-        frozenCages, dekitTime, multimediaPartners, flowersHort, exceptions,
-        tidyFrv, shiftAdmin, ...overrides
+        date,
+        stockType,
+        aRows,
+        fRows,
+        sel,
+        selPm,
+        spotUnits,
+        lehPallets,
+        w3Cages,
+        l1On,
+        l2On,
+        l1Dekit,
+        l2Dekit,
+        l1Partners,
+        l2Partners,
+        sandwich,
+        rmCages,
+        ecommSetup,
+        ecommItems,
+        ecommPickers,
+        spoilage,
+        cardboard,
+        pickup,
+        drinksBack,
+        crispsBack,
+        ambFaceup,
+        chlFaceup,
+        clearRoutes,
+        clearFloor,
+        frozenCages,
+        dekitTime,
+        multimediaPartners,
+        flowersHort,
+        exceptions,
+        tidyFrv,
+        shiftAdmin,
+        ...overrides
       });
       localStorage.setItem("wnf", payload);
       localStorage.setItem("wnf-b", payload);
@@ -475,15 +772,17 @@ function App() {
       // Also push to Google Sheets
       fetch("https://script.google.com/macros/s/AKfycby64LCZMvIMQhLaEsbEJt9dac_mEEnQKZnYNptuROBpK7zpFGDS-Ncz8QDvtLVvV5af/exec", {
         method: "POST",
-        headers: { "Content-Type": "text/plain" },
+        headers: {
+          "Content-Type": "text/plain"
+        },
         body: payload
-      }).catch(()=>{});
-    } catch(_) {}
+      }).catch(() => {});
+    } catch (_) {}
   };
-
-
   useEffect(() => {
-    const handler = () => { if (document.visibilityState === "hidden") syncSave(); };
+    const handler = () => {
+      if (document.visibilityState === "hidden") syncSave();
+    };
     const hideHandler = () => syncSave();
     const blurHandler = () => syncSave();
     document.addEventListener("visibilitychange", handler);
@@ -496,500 +795,1795 @@ function App() {
       window.removeEventListener("blur", blurHandler);
       window.removeEventListener("beforeunload", hideHandler);
     };
-  }, [date, stockType, aRows, fRows, sel, selPm, spotUnits, lehPallets, w3Cages,
-      l1On, l2On, l1Dekit, l2Dekit, l1Partners, l2Partners,
-      sandwich, rmCages, ecommSetup, ecommItems, ecommPickers,
-      spoilage, cardboard, pickup, drinksBack, crispsBack,
-      ambFaceup, chlFaceup, clearRoutes, clearFloor,
-      frozenCages, dekitTime, multimediaPartners, flowersHort, exceptions,
-      tidyFrv, shiftAdmin]);
-
+  }, [date, stockType, aRows, fRows, sel, selPm, spotUnits, lehPallets, w3Cages, l1On, l2On, l1Dekit, l2Dekit, l1Partners, l2Partners, sandwich, rmCages, ecommSetup, ecommItems, ecommPickers, spoilage, cardboard, pickup, drinksBack, crispsBack, ambFaceup, chlFaceup, clearRoutes, clearFloor, frozenCages, dekitTime, multimediaPartners, flowersHort, exceptions, tidyFrv, shiftAdmin]);
   const toggleLP = (which, name) => {
-    const [get,set] = which===1?[l1Partners,setL1Partners]:[l2Partners,setL2Partners];
-    set(get.includes(name)?get.filter(n=>n!==name):get.length<2?[...get,name]:get);
+    const [get, set] = which === 1 ? [l1Partners, setL1Partners] : [l2Partners, setL2Partners];
+    set(get.includes(name) ? get.filter(n => n !== name) : get.length < 2 ? [...get, name] : get);
   };
-  const commitARow = (i, v) => setARows(r => r.map((x,idx)=>idx===i?{...x,qty:v}:x));
-  const removeARow = (i) => setARows(r => r.filter((_,idx)=>idx!==i));
-  const commitFRow = (i, v) => setFRows(r => r.map((x,idx)=>idx===i?{...x,qty:v}:x));
-  const removeFRow = (i) => setFRows(r => r.filter((_,idx)=>idx!==i));
-  const card = { background:C.card, border:`1px solid ${C.border}`, borderRadius:12, padding:"18px 16px", marginBottom:14, boxShadow:"0 1px 3px rgba(0,0,0,0.06)" };
-  const secLabel = (color) => ({ fontSize:10, fontWeight:700, color:color||C.green, letterSpacing:2, textTransform:"uppercase", marginBottom:12 });
-  const inp = (active, color) => ({
-    background:active?"#f0f7f3":C.bg, border:`1.5px solid ${active?(color||C.green):C.border}`,
-    color:C.text, borderRadius:8, padding:"10px", width:"100%", textAlign:"center",
-    fontWeight:active?600:400, fontFamily:"inherit",
+  const commitARow = (i, v) => setARows(r => r.map((x, idx) => idx === i ? {
+    ...x,
+    qty: v
+  } : x));
+  const removeARow = i => setARows(r => r.filter((_, idx) => idx !== i));
+  const commitFRow = (i, v) => setFRows(r => r.map((x, idx) => idx === i ? {
+    ...x,
+    qty: v
+  } : x));
+  const removeFRow = i => setFRows(r => r.filter((_, idx) => idx !== i));
+  const card = {
+    background: C.card,
+    border: `1px solid ${C.border}`,
+    borderRadius: 12,
+    padding: "18px 16px",
+    marginBottom: 14,
+    boxShadow: "0 1px 3px rgba(0,0,0,0.06)"
+  };
+  const secLabel = color => ({
+    fontSize: 10,
+    fontWeight: 700,
+    color: color || C.green,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    marginBottom: 12
   });
-
-  return (
-    <div style={{ minHeight:"100vh", background:C.bg, color:C.text, fontFamily:"'Inter','Helvetica Neue',sans-serif", paddingBottom:80 }}>
-      {!loaded && <div style={{ position:"fixed", inset:0, background:C.green, display:"flex", alignItems:"center", justifyContent:"center", zIndex:9999 }}><div style={{ color:C.lime, fontSize:16, fontWeight:600 }}>Loading...</div></div>}
-
-
-      <style>{`
+  const inp = (active, color) => ({
+    background: active ? "#f0f7f3" : C.bg,
+    border: `1.5px solid ${active ? color || C.green : C.border}`,
+    color: C.text,
+    borderRadius: 8,
+    padding: "10px",
+    width: "100%",
+    textAlign: "center",
+    fontWeight: active ? 600 : 400,
+    fontFamily: "inherit"
+  });
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      minHeight: "100vh",
+      background: C.bg,
+      color: C.text,
+      fontFamily: "'Inter','Helvetica Neue',sans-serif",
+      paddingBottom: 80
+    }
+  }, !loaded && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "fixed",
+      inset: 0,
+      background: C.green,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 9999
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: C.lime,
+      fontSize: 16,
+      fontWeight: 600
+    }
+  }, "Loading...")), /*#__PURE__*/React.createElement("style", null, `
         @import url('https:
         *{box-sizing:border-box} input,select,button{outline:none;font-family:inherit}
         button{cursor:pointer} .chip{transition:all .12s}
         ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px}
         select option{background:white}
-      `}</style>
-
-      {/* HEADER */}
-      <div style={{ background:C.green, padding:"18px 16px 14px" }}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
-          <div>
-            <div style={{ fontSize:10, color:C.lime, letterSpacing:2, textTransform:"uppercase", marginBottom:4, fontWeight:600 }}>Waitrose &amp; Partners · Farnham</div>
-            <div style={{ fontSize:24, fontWeight:700, color:"#fff", lineHeight:1 }}>
-              Night Shift Planner{" "}
-              <span style={{ display:"inline-block", background:"#c9a84c", color:C.green, fontSize:9, fontWeight:800, letterSpacing:1, textTransform:"uppercase", borderRadius:4, padding:"2px 6px", verticalAlign:"middle", marginLeft:4 }}>GOLD</span>
-            </div>
-          </div>
-          <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:6, flexShrink:0 }}>
-            <input type="date" value={date} onChange={e=>setDate(e.target.value)}
-              style={{ background:"rgba(255,255,255,0.12)", border:"1.5px solid rgba(255,255,255,0.25)", color:"#fff", borderRadius:8, padding:"6px 10px", fontSize:12 }} />
-            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-              <div style={{ fontSize:11, color:saveStatus==="saved"?C.lime:"rgba(255,255,255,0.5)", fontWeight:600 }}>
-                {saveStatus==="saved"?`✓ Saved ${lastSaved}${navigator.standalone?" 📱":" 🌐"}`:saveStatus==="saving"?"Saving...":"✓ Saved"}
-              </div>
-              {confirmReset?(
-                <div style={{ display:"flex", gap:5, alignItems:"center" }}>
-                  <span style={{ fontSize:11, color:"rgba(255,255,255,0.7)" }}>Sure?</span>
-                  <button onClick={resetAll} style={{ background:C.red, border:"none", color:"#fff", borderRadius:6, padding:"3px 8px", fontSize:11, fontWeight:700 }}>Yes</button>
-                  <button onClick={()=>setConfirmReset(false)} style={{ background:"rgba(255,255,255,0.15)", border:"none", color:"#fff", borderRadius:6, padding:"3px 8px", fontSize:11 }}>No</button>
-                </div>
-              ):(
-                <button onClick={()=>setConfirmReset(true)} style={{ background:"rgba(255,255,255,0.12)", border:"1px solid rgba(255,255,255,0.25)", color:"rgba(255,255,255,0.8)", borderRadius:6, padding:"3px 8px", fontSize:11 }}>Reset</button>
-              )}
-            </div>
-          </div>
-        </div>
-        <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-          <span style={{ fontSize:12, color:"rgba(255,255,255,0.6)" }}>Stock type:</span>
-          {["cases","units"].map(t=>(
-            <button key={t} className="chip" onClick={()=>setStockType(t)}
-              style={{ background:stockType===t?C.lime:"rgba(255,255,255,0.1)", border:`1.5px solid ${stockType===t?C.lime:"rgba(255,255,255,0.2)"}`, color:stockType===t?C.green:"rgba(255,255,255,0.85)", borderRadius:20, padding:"6px 14px", fontSize:12, fontWeight:stockType===t?700:400 }}>
-              {t==="cases"?"📦 Cases (1/min)":"📋 Units (9/min)"}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Backup / Restore panel */}
-      {showBackup && (
-        <div style={{ background:"#0f2318", padding:"14px 16px", borderBottom:`2px solid ${C.lime}` }}>
-          <div style={{ fontSize:13, color:C.lime, fontWeight:700, marginBottom:12 }}>☁️ Cloud Save &amp; Restore</div>
-          <div style={{ display:"flex", gap:8, marginBottom:12 }}>
-            <button onClick={cloudSave} style={{ flex:1, background:C.lime, border:"none", color:C.green, borderRadius:8, padding:"12px", fontSize:13, fontWeight:700, cursor:"pointer" }}>
-              ☁️ Save to Cloud
-            </button>
-            <button onClick={cloudLoad} style={{ flex:1, background:"#2980b9", border:"none", color:"#fff", borderRadius:8, padding:"12px", fontSize:13, fontWeight:700, cursor:"pointer" }}>
-              ⬇️ Load from Cloud
-            </button>
-          </div>
-          {restoreMsg && <div style={{ fontSize:12, color:restoreMsg.startsWith("✓")?"#c8e32a":restoreMsg.startsWith("✗")?"#ff6b6b":"rgba(255,255,255,0.7)", marginBottom:10, textAlign:"center" }}>{restoreMsg}</div>}
-          <div style={{ borderTop:"1px solid rgba(255,255,255,0.15)", paddingTop:12, marginTop:4 }}>
-            <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)", marginBottom:6 }}>Manual backup (fallback):</div>
-            <button onClick={copyBackup} style={{ width:"100%", background:"rgba(255,255,255,0.1)", border:"1px solid rgba(255,255,255,0.2)", color:"rgba(255,255,255,0.8)", borderRadius:8, padding:"8px", fontSize:12, cursor:"pointer", marginBottom:8 }}>
-              📋 Show backup text
-            </button>
-            {restoreText && <>
-              <textarea value={restoreText} onChange={e=>setRestoreText(e.target.value)}
-                style={{ width:"100%", height:80, borderRadius:8, border:`1.5px solid ${C.border}`, padding:10, fontSize:10, fontFamily:"monospace", resize:"none", marginBottom:8 }}/>
-              <button onClick={doRestore}
-                style={{ width:"100%", background:"#27ae60", border:"none", color:"#fff", borderRadius:8, padding:"8px", fontSize:12, fontWeight:700, cursor:"pointer" }}>
-                ↩ Restore from text
-              </button>
-            </>}
-          </div>
-        </div>
-      )}
-
-      <div style={{ maxWidth:680, margin:"0 auto", padding:"14px 14px 20px" }}>
-
-        {/* CAPACITY */}
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:14 }}>
-          <div style={{ ...card, marginBottom:0, borderTop:`3px solid ${C.teal}` }}>
-            <div style={secLabel(C.teal)}>Available Hours</div>
-            <div style={{ fontSize:34, fontWeight:700, color:C.teal, lineHeight:1 }}>{colleagues>0?fmt(teamMins):"—"}</div>
-            {preMidMins>0&&<div style={{ fontSize:13, fontWeight:600, color:"#5a78d4", marginTop:6 }}>🌙 Before midnight: {fmt(preMidMins)}</div>}
-            <div style={{ fontSize:12, color:C.muted, marginTop:5 }}>{colleagues>0?`${colleagues} partner${colleagues>1?"s":""}`:"Select partners"}</div>
-            {colleagues>0&&<div style={{ marginTop:10, display:"flex", flexDirection:"column", gap:4 }}>
-              {activeP.map((p,i)=>{
-                const maxH=Math.max(...activeP.map(q=>sel[q.name]));
-                return (
-                  <div key={p.name} style={{ display:"flex", alignItems:"center", gap:7 }}>
-                    <div style={{ width:64, fontSize:11, color:C.text, fontWeight:500 }}>{p.name}</div>
-                    <div style={{ flex:1, background:C.bg, borderRadius:3, height:5 }}>
-                      <div style={{ width:`${Math.round(sel[p.name]/maxH*100)}%`, height:"100%", borderRadius:3, background:`hsl(${150+(i*22)%60},55%,42%)` }}/>
-                    </div>
-                    <div style={{ width:30, fontSize:11, color:C.muted, textAlign:"right" }}>{sel[p.name]}h</div>
-                  </div>
-                );
-              })}
-            </div>}
-          </div>
-
-          <div style={{ ...card, marginBottom:0, borderTop:`3px solid ${stColor}` }}>
-            <div style={secLabel(stColor)}>Time Needed</div>
-            <div style={{ fontSize:34, fontWeight:700, color:stColor, lineHeight:1 }}>{totalNeeded>0?fmt(totalNeeded):"—"}</div>
-            <div style={{ fontSize:12, color:C.muted, marginTop:5 }}>
-              {totalNeeded>0?`${stLabel}${colleagues>0?` · ~${fmt(Math.ceil(totalNeeded/colleagues))}/partner`:""}`:"Enter quantities"}
-            </div>
-            {totalNeeded>0&&<div style={{ marginTop:8, display:"flex", flexDirection:"column", gap:2 }}>
-              {ambMins>0&&<div style={{ fontSize:11, color:C.muted }}>📦 Ambient: {fmt(ambMins)}</div>}
-              {freshMins>0&&<div style={{ fontSize:11, color:C.muted }}>🌿 Fresh: {fmt(freshMins)}</div>}
-              {spotMins>0&&<div style={{ fontSize:11, color:C.muted }}>🔍 Spotting: {fmt(spotMins)} ({spotBase} units)</div>}
-              {lehMins>0&&<div style={{ fontSize:11, color:C.muted }}>📦 Lehnams: {fmt(lehMins)}</div>}
-              {w3Mins>0&&<div style={{ fontSize:11, color:C.muted }}>🧺 W3: {fmt(w3Mins)}</div>}
-              {lorryMins>0&&<div style={{ fontSize:11, color:C.muted }}>🚚 Lorries: {fmt(lorryMins)}</div>}
-              {sandMins>0&&<div style={{ fontSize:11, color:C.muted }}>🥪 Sandwiches: 25m</div>}
-              {rmMins>0&&<div style={{ fontSize:11, color:C.muted }}>🍱 Ready Meals: {fmt(rmMins)}</div>}
-              {setupMins>0&&<div style={{ fontSize:11, color:C.muted }}>⚙️ Ecomm Setup: 40m</div>}
-              {ecommSolo>0&&<div style={{ fontSize:11, color:C.muted }}>🛒 Ecomm: {fmt(ecommSolo)}</div>}
-              {spMins>0&&<div style={{ fontSize:11, color:C.muted }}>🗑️ Spoilage: {fmt(spMins)}</div>}
-              {cardMins>0&&<div style={{ fontSize:11, color:C.muted }}>📦 Cardboard: 2h</div>}
-              {pickMins>0&&<div style={{ fontSize:11, color:C.muted }}>🧹 Pick Up: {fmt(pickMins)}</div>}
-              {drMins>0&&<div style={{ fontSize:11, color:C.muted }}>🥤 Drinks Backstock: 1h</div>}
-              {crMins>0&&<div style={{ fontSize:11, color:C.muted }}>🥔 Crisps Backstock: 30m</div>}
-              {ambFMins>0&&<div style={{ fontSize:11, color:C.muted }}>🏪 Ambient Face Up: 10h</div>}
-              {chlFMins>0&&<div style={{ fontSize:11, color:C.muted }}>❄️ Chilled Face Up: 3h</div>}
-              {routeMins>0&&<div style={{ fontSize:11, color:C.muted }}>🛣️ Clearing Routes: 30m</div>}
-              {floorMins>0&&<div style={{ fontSize:11, color:C.muted }}>🏬 Clear Shop Floor: 1h</div>}
-              {frozenMins>0&&<div style={{ fontSize:11, color:C.muted }}>🧊 Frozen: {fmt(frozenMins)}</div>}
-              {multiMins>0&&<div style={{ fontSize:11, color:C.muted }}>📱 Multimedia: {fmt(multiMins)}</div>}
-              {flowersHortMins>0&&<div style={{ fontSize:11, color:C.muted }}>🌸 Flowers & Horticultural: 1h</div>}
-              {exceptionsMins>0&&<div style={{ fontSize:11, color:C.muted }}>❗ Exceptions: 1h</div>}
-              {tidyFrvMins>0&&<div style={{ fontSize:11, color:C.muted }}>🥬 Tidy F&V + Rackaway: 45m</div>}
-              {shiftAdminMins>0&&<div style={{ fontSize:11, color:C.muted }}>📋 Shift Admin: 20m</div>}
-              {dekitMins>0&&<div style={{ fontSize:11, color:C.muted }}>🌅 4am Dekit: {fmt(dekitMins)}</div>}
-              {multiMins>0&&<div style={{ fontSize:11, color:C.muted }}>📱 Multimedia: {fmt(multiMins)} ({multiPartners} partners)</div>}
-            </div>}
-            {totalNeeded>0&&colleagues>0&&<div style={{ marginTop:10 }}>
-              <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:C.muted, marginBottom:4 }}>
-                <span>{util}% utilised</span>
-                <span style={{ color:slack>=0?C.teal:C.red }}>{slack>=0?`+${fmt(slack)} spare`:`${fmt(Math.abs(slack))} over`}</span>
-              </div>
-              <div style={{ background:C.bg, borderRadius:4, height:8, overflow:"hidden" }}>
-                <div style={{ width:`${Math.min(100,util)}%`, height:"100%", background:stColor, borderRadius:4, transition:"width .4s" }}/>
-              </div>
-            </div>}
-          </div>
-        </div>
-
-        {/* PARTNERS */}
-        <div style={card}>
-          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:12 }}>
-            <div style={secLabel()}>Partners on Shift</div>
-            <div style={{ fontSize:12, color:C.muted }}>{colleagues} selected</div>
-          </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(88px,1fr))", gap:7 }}>
-            {PARTNERS.map(p=>{
-              const on=!!sel[p.name]; const sd=sel[p.name];
-              return (
-                <div key={p.name} style={{ display:"flex", flexDirection:"column", gap:3 }}>
-                  <button className="chip"
-                    onClick={()=>{
-                      setSel(prev=>{ const n={...prev}; if(n[p.name]) delete n[p.name]; else n[p.name]=p.h[p.h.length-1]; return n; });
-                      setSelPm(prev=>{ const n={...prev}; if(n[p.name]) delete n[p.name]; else n[p.name]=p.pm[p.pm.length-1]; return n; });
-                    }}
-                    style={{ background:on?C.green:C.bg, border:`1.5px solid ${on?C.green:C.border}`, color:on?"#fff":C.text, borderRadius:20, padding:"7px 8px", fontSize:12, fontWeight:on?600:400, textAlign:"center", minWidth:72 }}>
-                    {on?"✓ ":""}{p.name}{p.h.length===1?<span style={{ fontSize:10, color:on?C.lime+"cc":C.dim, marginLeft:4 }}>{p.h[0]}h</span>:""}
-                  </button>
-                  {on&&p.h.length>1&&(
-                    <div style={{ display:"flex", gap:3 }}>
-                      {p.h.map(h=>(
-                        <button key={h} className="chip" onClick={()=>setSel(prev=>({...prev,[p.name]:h}))}
-                          style={{ flex:1, background:sd===h?C.lime:C.bg, border:`1.5px solid ${sd===h?C.limeDark:C.border}`, color:sd===h?C.green:C.muted, borderRadius:6, padding:"3px 4px", fontSize:10, fontWeight:sd===h?700:400 }}>{h}h</button>
-                      ))}
-                    </div>
-                  )}
-                  {on&&p.h.length===1&&<div style={{ textAlign:"center", fontSize:10, color:C.muted }}>{p.h[0]}h fixed</div>}
-                  {on&&p.pm&&p.pm.length>1&&(
-                    <div style={{ display:"flex", gap:3 }}>
-                      {p.pm.map(m=>(
-                        <button key={m} className="chip" onClick={()=>setSelPm(prev=>({...prev,[p.name]:m}))}
-                          style={{ flex:1, background:selPm[p.name]===m?"#5a78d4":C.bg, border:`1.5px solid ${selPm[p.name]===m?"#5a78d4":C.border}`, color:selPm[p.name]===m?"#fff":C.muted, borderRadius:5, padding:"2px 3px", fontSize:9, fontWeight:selPm[p.name]===m?700:400 }}>
-                          {fmt(m)} 🌙
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {on&&p.pm&&p.pm.length===1&&<div style={{ textAlign:"center", fontSize:9, color:"#5a78d4aa" }}>{fmt(p.pm[0])} 🌙</div>}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* SPOTTING */}
-        <div style={{ ...card, borderTop:`3px solid #e07800` }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-            <div><div style={secLabel("#e07800")}>Ambient Spotting</div><div style={{ fontSize:12, color:C.muted }}>2.3 sec per unit</div></div>
-            <div style={{ textAlign:"right" }}>
-              <div style={{ fontSize:26, fontWeight:700, color:"#e07800" }}>{spotMins>0?fmt(spotMins):"—"}</div>
-              <div style={{ fontSize:11, color:C.muted }}>{spotBase} units {spotUnits===""?"(auto)":"(manual)"}</div>
-            </div>
-          </div>
-          <div style={{ fontSize:11, color:C.muted, textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Override Units (leave blank to use ambient total)</div>
-          <SimpleInput value={spotUnits} onChange={setSpotUnits} placeholder={`Auto: ${ambQty}`} style={{ ...inp(spotUnits!==""&&qn(spotUnits)>0,"#e07800"), fontSize:16 }}/>
-        </div>
-
-        {/* LEHNAMS */}
-        <div style={{ ...card, borderTop:`3px solid #e67e22` }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-            <div><div style={secLabel("#e67e22")}>Lehnams</div><div style={{ fontSize:12, color:C.muted }}>Crisps &amp; toilet rolls · 1h per pallet</div></div>
-            {lehMins>0&&<div style={{ fontSize:26, fontWeight:700, color:"#e67e22" }}>{fmt(lehMins)}</div>}
-          </div>
-          <div style={{ fontSize:11, color:C.muted, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Number of Pallets</div>
-          <SimpleInput value={lehPallets} onChange={setLehPallets} placeholder="0" style={{ ...inp(qn(lehPallets)>0,"#e67e22"), fontSize:16 }}/>
-        </div>
-
-        {/* W3 */}
-        <div style={{ ...card, borderTop:`3px solid #27ae60` }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-            <div><div style={secLabel("#27ae60")}>W3 Handed Over</div><div style={{ fontSize:12, color:C.muted }}>1h per cage</div></div>
-            {w3Mins>0&&<div style={{ fontSize:26, fontWeight:700, color:"#27ae60" }}>{fmt(w3Mins)}</div>}
-          </div>
-          <div style={{ fontSize:11, color:C.muted, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Number of Cages</div>
-          <SimpleInput value={w3Cages} onChange={setW3Cages} placeholder="0" style={{ ...inp(qn(w3Cages)>0,"#27ae60"), fontSize:16 }}/>
-        </div>
-
-        {/* FROZEN */}
-        <div style={{ ...card, borderTop:`3px solid #00b4d8` }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-            <div><div style={secLabel("#00b4d8")}>Frozen</div><div style={{ fontSize:12, color:C.muted }}>1h per cage</div></div>
-            {frozenMins>0&&<div style={{ fontSize:26, fontWeight:700, color:"#00b4d8" }}>{fmt(frozenMins)}</div>}
-          </div>
-          <div style={{ fontSize:11, color:C.muted, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Number of Cages</div>
-          <SimpleInput value={frozenCages} onChange={setFrozenCages} placeholder="0" style={{ ...inp(qn(frozenCages)>0,"#00b4d8"), fontSize:16 }}/>
-        </div>
-        {/* DELIVERY */}
-        <div style={card}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-            <div style={secLabel()}>Delivery — {stockType==="cases"?"Cases":"Units"} by Dept</div>
-            <button onClick={()=>setARows(r=>[...r,{dept:"",qty:""}])} style={{ background:C.lime, border:"none", color:C.green, borderRadius:20, padding:"6px 14px", fontSize:12, fontWeight:700 }}>+ Add</button>
-          </div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 80px 90px 26px", gap:8, marginBottom:8, paddingBottom:8, borderBottom:`1px solid ${C.border}` }}>
-            {["Department", stockType==="cases"?"Cases":"Units", "Est. Time",""].map(h=>(
-              <div key={h} style={{ fontSize:10, fontWeight:700, color:C.green, letterSpacing:1, textTransform:"uppercase" }}>{h}</div>
-            ))}
-          </div>
-          <div style={{ fontSize:10, fontWeight:700, color:C.green, letterSpacing:2, textTransform:"uppercase", marginBottom:7 }}>Ambient</div>
-          {aRows.map((row,i) => (
-            <DepRow key={row.dept||`a-${i}`} row={row} rate={rate}
-              onCommit={v => commitARow(i,v)}
-              onRemove={() => removeARow(i)}
-            />
-          ))}
-          <div style={{ fontSize:10, fontWeight:700, color:C.light, letterSpacing:2, textTransform:"uppercase", marginTop:12, marginBottom:7, paddingTop:10, borderTop:`1px solid ${C.border}` }}>Fresh</div>
-          {fRows.map((row,i) => (
-            <DepRow key={row.dept||`f-${i}`} row={row} rate={rate} accent="#f0f9f4"
-              onCommit={v => commitFRow(i,v)}
-              onRemove={() => removeFRow(i)}
-            />
-          ))}
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 80px 90px 26px", gap:8, marginTop:12, paddingTop:12, borderTop:`2px solid ${C.green}22` }}>
-            <div style={{ fontSize:11, fontWeight:700, color:C.green, textTransform:"uppercase" }}>Total</div>
-            <div style={{ fontSize:14, fontWeight:700, color:C.green, textAlign:"center" }}>{totalQty}</div>
-            <div style={{ fontSize:13, fontWeight:700, color:C.teal, textAlign:"center" }}>{stockMins>0?fmt(stockMins):"—"}</div>
-            <div/>
-          </div>
-          {totalQty>0&&<div style={{ marginTop:14, paddingTop:12, borderTop:`1px solid ${C.border}`, display:"flex", flexDirection:"column", gap:5 }}>
-            {allRows.filter(r=>qn(r.qty)>0).map((r,i)=>{
-              const pct=Math.round(qn(r.qty)/totalQty*100);
-              return (
-                <div key={r.dept} style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  <div style={{ width:150, fontSize:11, color:C.text, wordBreak:"break-word", lineHeight:1.3 }}>{r.dept}</div>
-                  <div style={{ flex:1, background:C.bg, borderRadius:3, height:7 }}>
-                    <div style={{ width:`${pct}%`, height:"100%", borderRadius:3, background:`hsl(${140+(i*22)%80},52%,${40+(i%3)*7}%)` }}/>
-                  </div>
-                  <div style={{ width:40, fontSize:11, color:C.muted, textAlign:"right" }}>{r.qty}</div>
-                  <div style={{ width:30, fontSize:11, color:C.dim, textAlign:"right" }}>{pct}%</div>
-                </div>
-              );
-            })}
-          </div>}
-        </div>
-
-        {/* SPLITTING */}
-        <div style={{ ...card, borderTop:`3px solid #e91e8c` }}>
-          <div style={secLabel("#e91e8c")}>Splitting</div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-            <div style={{ background:C.bg, borderRadius:10, padding:"12px" }}>
-              <div style={{ fontSize:12, fontWeight:700, marginBottom:2 }}>🥪 Sandwiches</div>
-              <div style={{ fontSize:11, color:C.muted, marginBottom:10 }}>Fixed · 25 min</div>
-              <Toggle val={sandwich} onChange={setSandwich} options={[{v:true,l:"Yes"},{v:false,l:"No"}]} color="#e91e8c"/>
-              {sandwich&&<div style={{ marginTop:8, fontSize:22, fontWeight:700, color:"#e91e8c" }}>25m</div>}
-            </div>
-            <div style={{ background:C.bg, borderRadius:10, padding:"12px" }}>
-              <div style={{ fontSize:12, fontWeight:700, marginBottom:2 }}>🍱 Ready Meals</div>
-              <div style={{ fontSize:11, color:C.muted, marginBottom:10 }}>8m 15s per cage</div>
-              <SimpleInput value={rmCages} onChange={setRmCages} placeholder="0 cages"
-                style={{ ...inp(qn(rmCages)>0,"#e91e8c"), fontSize:16 }}/>
-              {qn(rmCages)>0&&<div style={{ marginTop:8, fontSize:22, fontWeight:700, color:"#e91e8c" }}>{fmt(rmMins)}</div>}
-            </div>
-          </div>
-        </div>
-
-        {/* MULTIMEDIA */}
-        <div style={{ ...card, borderTop:`3px solid #ff9800` }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-            <div><div style={secLabel("#ff9800")}>Partner Multimedia</div><div style={{ fontSize:12, color:C.muted }}>40 min per partner</div></div>
-            {multiMins>0&&<div style={{ textAlign:"right" }}><div style={{ fontSize:26, fontWeight:700, color:"#ff9800" }}>{fmt(multiMins)}</div><div style={{ fontSize:11, color:C.muted }}>{multiPartners} partner{qn(multiPartners)!==1?"s":""}</div></div>}
-          </div>
-          <div style={{ fontSize:11, color:C.muted, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Number of Partners</div>
-          <SimpleInput value={multiPartners} onChange={setMultiPartners} placeholder="0" style={{ ...inp(qn(multiPartners)>0,"#ff9800"), fontSize:16 }}/>
-        </div>
-
-        {/* OTHER TASKS */}
-        <div style={{ ...card, borderTop:`3px solid #2980b9` }}>
-          <div style={secLabel("#2980b9")}>Other Tasks</div>
-          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-            {[
-              {label:"🗑️ Spoilage",         sub:"Sort & clear",                      content:<Toggle val={spoilage}    onChange={setSpoilage}    options={[{v:0,l:"Off"},{v:15,l:"15m"},{v:20,l:"20m"}]} color="#2980b9"/>},
-              {label:"📦 Cardboard",         sub:"Inc. bale · 2 hours",               content:<Toggle val={cardboard}   onChange={setCardboard}   options={[{v:false,l:"No"},{v:true,l:"Yes"}]} color="#2980b9"/>},
-              {label:"🧹 Pick Up",           sub:"Inc. racking away",                 content:<Toggle val={pickup}      onChange={setPickup}      options={[{v:0,l:"Off"},{v:60,l:"1h"},{v:90,l:"1.5h"}]} color="#2980b9"/>},
-              {label:"🥤 Drinks Backstock",  sub:"Bring down, work & return · 1h",    content:<Toggle val={drinksBack}  onChange={setDrinksBack}  options={[{v:false,l:"No"},{v:true,l:"Yes"}]} color="#2980b9"/>},
-              {label:"🥔 Crisps Backstock",  sub:"30 mins",                           content:<Toggle val={crispsBack}  onChange={setCrispsBack}  options={[{v:false,l:"No"},{v:true,l:"Yes"}]} color="#2980b9"/>},
-              {label:"🏪 Ambient Face Up",   sub:"10 hours",                          content:<Toggle val={ambFaceup}   onChange={setAmbFaceup}   options={[{v:false,l:"No"},{v:true,l:"Yes"}]} color="#2980b9"/>},
-              {label:"❄️ Chilled Face Up",   sub:"3 hours",                           content:<Toggle val={chlFaceup}   onChange={setChlFaceup}   options={[{v:false,l:"No"},{v:true,l:"Yes"}]} color="#2980b9"/>},
-              {label:"🛣️ Clearing Routes",   sub:"30 mins",                           content:<Toggle val={clearRoutes} onChange={setClearRoutes} options={[{v:false,l:"No"},{v:true,l:"Yes"}]} color="#2980b9"/>},
-              {label:"🏬 Clear Shop Floor",  sub:"Inc. Zorba strips · 1 hour",        content:<Toggle val={clearFloor}  onChange={setClearFloor}  options={[{v:false,l:"No"},{v:true,l:"Yes"}]} color="#2980b9"/>},
-              {label:"🌅 4am Dekit",             sub:"45 min or 1 hour",                  content:<Toggle val={dekitOption} onChange={setDekitOption} options={[{v:0,l:"Off"},{v:45,l:"45m"},{v:60,l:"1h"}]} color="#2980b9"/>},
-            ].map(item=>(
-              <div key={item.label} style={{ background:C.bg, borderRadius:10, padding:"12px 14px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12 }}>
-                <div><div style={{ fontSize:13, fontWeight:600 }}>{item.label}</div><div style={{ fontSize:11, color:C.muted }}>{item.sub}</div></div>
-                {item.content}
-              </div>
-            ))}
-            {/* Flowers & Horticultural */}
-            {[
-              {label:"🌸 Flowers & Horticultural",   sub:"1 hour", val:flowersHort,   setVal:setFlowersHort},
-              {label:"❗ Exceptions",                  sub:"1 hour", val:exceptions,    setVal:setExceptions},
-              {label:"🥬 Tidy F&V & Rackaway",           sub:"45 mins", val:tidyFrv,       setVal:setTidyFrv},
-              {label:"📋 Start of Shift Admin",           sub:"20 mins", val:shiftAdmin,    setVal:setShiftAdmin},
-            ].map(item=>(
-              <div key={item.label} style={{ background:C.bg, borderRadius:10, padding:"12px 14px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12 }}>
-                <div><div style={{ fontSize:13, fontWeight:600 }}>{item.label}</div><div style={{ fontSize:11, color:C.muted }}>{item.sub}</div></div>
-                <Toggle val={item.val} onChange={item.setVal} options={[{v:false,l:"No"},{v:true,l:"Yes"}]} color="#2980b9"/>
-              </div>
-            ))}
-            {/* Multimedia — number input */}
-            <div style={{ background:C.bg, borderRadius:10, padding:"12px 14px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12 }}>
-              <div>
-                <div style={{ fontSize:13, fontWeight:600 }}>📱 Partner Multimedia</div>
-                <div style={{ fontSize:11, color:C.muted }}>40 min per partner · {qn(multimediaPartners)>0?fmt(multiMins):""}</div>
-              </div>
-              <SimpleInput value={String(multimediaPartners||"")} onChange={v=>setMultimediaPartners(parseInt(v)||0)} placeholder="0"
-                style={{ ...inp(qn(multimediaPartners)>0,"#2980b9"), fontSize:16, width:80, textAlign:"center" }}/>
-            </div>
-          </div>
-        </div>
-
-        {/* ECOMM SETUP */}
-        <div style={{ ...card, borderTop:`3px solid #5a78d4` }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-            <div><div style={secLabel("#5a78d4")}>Setting Up Ecomm</div><div style={{ fontSize:12, color:C.muted }}>Fixed · 40 minutes</div></div>
-            {ecommSetup&&<div style={{ fontSize:24, fontWeight:700, color:"#5a78d4" }}>40m</div>}
-          </div>
-          <Toggle val={ecommSetup} onChange={setEcommSetup} options={[{v:true,l:"Yes"},{v:false,l:"No"}]} color="#5a78d4"/>
-        </div>
-
-        {/* ECOMM PICKINGS */}
-        <div style={{ ...card, borderTop:`3px solid #5a78d4` }}>
-          <div style={secLabel("#5a78d4")}>Ecomm Pickings</div>
-          <div style={{ fontSize:12, color:C.muted, marginBottom:14 }}>230 items/hr per picker</div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:14 }}>
-            <div>
-              <div style={{ fontSize:11, color:C.muted, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Total Items</div>
-              <SimpleInput value={ecommItems} onChange={setEcommItems} placeholder="0" style={{ ...inp(qn(ecommItems)>0,"#5a78d4"), fontSize:16 }}/>
-            </div>
-            <div>
-              <div style={{ fontSize:11, color:C.muted, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>No. of Pickers</div>
-              <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
-                {[1,2,3,4,5,6].map(n=>(
-                  <button key={n} className="chip" onClick={()=>setEcommPickers(n)}
-                    style={{ flex:1, background:ecommPickers===n?C.green:C.bg, border:`1.5px solid ${ecommPickers===n?C.green:C.border}`, color:ecommPickers===n?"#fff":C.text, borderRadius:7, padding:"8px 2px", fontSize:13, fontWeight:ecommPickers===n?700:400 }}>{n}</button>
-                ))}
-              </div>
-              <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:8 }}>
-                <span style={{ fontSize:11, color:C.muted }}>Custom:</span>
-                <SimpleInput value={String(ecommPickers)} onChange={v=>setEcommPickers(Math.max(1,parseInt(v)||1))} style={{ ...inp(![1,2,3,4,5,6].includes(ecommPickers),"#5a78d4"), fontSize:16 }}/>
-              </div>
-            </div>
-          </div>
-          {qn(ecommItems)>0&&(
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
-              {[
-                {label:"Solo Time", val:fmt(ecommSolo), sub:"1 picker", color:"#5a78d4"},
-                {label:"Team Time", val:fmt(ecommTeam), sub:`${ecommPickers} picker${ecommPickers>1?"s":""}`, color:C.teal},
-                {label:"Per Picker",val:`${Math.ceil(qn(ecommItems)/ecommPickers)}`, sub:"items each", color:C.green},
-              ].map(c=>(
-                <div key={c.label} style={{ background:C.bg, borderRadius:8, padding:"11px 10px", borderTop:`3px solid ${c.color}` }}>
-                  <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:1, marginBottom:5 }}>{c.label}</div>
-                  <div style={{ fontSize:20, fontWeight:700, color:c.color }}>{c.val}</div>
-                  <div style={{ fontSize:11, color:C.muted, marginTop:3 }}>{c.sub}</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* LORRY UNLOADS */}
-        <div style={{ ...card, borderTop:`3px solid #9b59b6` }}>
-          <div style={secLabel("#9b59b6")}>Lorry Unloads</div>
-          {[
-            {label:"First Unload", time:"20:30", on:l1On, setOn:setL1On, dekit:l1Dekit, setDekit:setL1Dekit, mins:l1Mins, partners:l1Partners, idx:1},
-            {label:"Second Unload",time:"00:30", on:l2On, setOn:setL2On, dekit:l2Dekit, setDekit:setL2Dekit, mins:l2Mins, partners:l2Partners, idx:2},
-          ].map((lorry,li)=>(
-            <div key={li} style={{ background:C.bg, borderRadius:10, padding:"14px", marginBottom:li===0?10:0 }}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-                <div>
-                  <div style={{ fontSize:13, fontWeight:700, color:"#9b59b6" }}>{lorry.label}</div>
-                  <div style={{ fontSize:12, color:C.muted }}>🕐 {lorry.time}</div>
-                </div>
-                {lorry.on&&<div style={{ textAlign:"right" }}>
-                  <div style={{ fontSize:22, fontWeight:700, color:"#9b59b6" }}>{fmt(lorry.mins)}</div>
-                  <div style={{ fontSize:11, color:C.muted }}>{lorry.partners.length>0 ? `${lorry.partners.length} partner${lorry.partners.length>1?"s":""} × ${lorry.dekit?"1h":"40m"}` : "Assign partners"}</div>
-                </div>}
-              </div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:lorry.on?12:0 }}>
-                <div>
-                  <div style={{ fontSize:11, color:C.muted, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>On tonight?</div>
-                  <Toggle val={lorry.on} onChange={lorry.setOn} options={[{v:true,l:"Yes"},{v:false,l:"No"}]} color="#9b59b6"/>
-                </div>
-                {lorry.on&&<div>
-                  <div style={{ fontSize:11, color:C.muted, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Dekit?</div>
-                  <Toggle val={lorry.dekit} onChange={lorry.setDekit} options={[{v:true,l:"Yes · 1h"},{v:false,l:"No · 40m"}]} color="#9b59b6"/>
-                </div>}
-              </div>
-              {lorry.on&&<div>
-                <div style={{ fontSize:11, color:C.muted, textTransform:"uppercase", letterSpacing:1, marginBottom:7 }}>Assign Partners ({lorry.partners.length}/2)</div>
-                <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
-                  {(colleagues>0?activeP:PARTNERS).map(p=>{
-                    const assigned=lorry.partners.includes(p.name);
-                    const disabled=!assigned&&lorry.partners.length>=2;
-                    return (
-                      <button key={p.name} className="chip" onClick={!disabled?()=>toggleLP(lorry.idx,p.name):undefined}
-                        style={{ background:assigned?"#9b59b6":disabled?C.bg:"#fff", border:`1.5px solid ${assigned?"#9b59b6":C.border}`, color:assigned?"#fff":disabled?C.dim:C.text, borderRadius:20, padding:"5px 11px", fontSize:12, fontWeight:assigned?600:400, opacity:disabled?.4:1 }}>
-                        {p.name}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>}
-            </div>
-          ))}
-        </div>
-
-      </div>
-    </div>
-  );
+      `), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.green,
+      padding: "18px 16px 14px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: C.lime,
+      letterSpacing: 2,
+      textTransform: "uppercase",
+      marginBottom: 4,
+      fontWeight: 600
+    }
+  }, "Waitrose & Partners · Farnham"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 24,
+      fontWeight: 700,
+      color: "#fff",
+      lineHeight: 1
+    }
+  }, "Night Shift Planner", " ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: "inline-block",
+      background: "#c9a84c",
+      color: C.green,
+      fontSize: 9,
+      fontWeight: 800,
+      letterSpacing: 1,
+      textTransform: "uppercase",
+      borderRadius: 4,
+      padding: "2px 6px",
+      verticalAlign: "middle",
+      marginLeft: 4
+    }
+  }, "GOLD"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-end",
+      gap: 6,
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "date",
+    value: date,
+    onChange: e => setDate(e.target.value),
+    style: {
+      background: "rgba(255,255,255,0.12)",
+      border: "1.5px solid rgba(255,255,255,0.25)",
+      color: "#fff",
+      borderRadius: 8,
+      padding: "6px 10px",
+      fontSize: 12
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: saveStatus === "saved" ? C.lime : "rgba(255,255,255,0.5)",
+      fontWeight: 600
+    }
+  }, saveStatus === "saved" ? `✓ Saved ${lastSaved}${navigator.standalone ? " 📱" : " 🌐"}` : saveStatus === "saving" ? "Saving..." : "✓ Saved"), confirmReset ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 5,
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11,
+      color: "rgba(255,255,255,0.7)"
+    }
+  }, "Sure?"), /*#__PURE__*/React.createElement("button", {
+    onClick: resetAll,
+    style: {
+      background: C.red,
+      border: "none",
+      color: "#fff",
+      borderRadius: 6,
+      padding: "3px 8px",
+      fontSize: 11,
+      fontWeight: 700
+    }
+  }, "Yes"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setConfirmReset(false),
+    style: {
+      background: "rgba(255,255,255,0.15)",
+      border: "none",
+      color: "#fff",
+      borderRadius: 6,
+      padding: "3px 8px",
+      fontSize: 11
+    }
+  }, "No")) : /*#__PURE__*/React.createElement("button", {
+    onClick: () => setConfirmReset(true),
+    style: {
+      background: "rgba(255,255,255,0.12)",
+      border: "1px solid rgba(255,255,255,0.25)",
+      color: "rgba(255,255,255,0.8)",
+      borderRadius: 6,
+      padding: "3px 8px",
+      fontSize: 11
+    }
+  }, "Reset")))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: "rgba(255,255,255,0.6)"
+    }
+  }, "Stock type:"), ["cases", "units"].map(t => /*#__PURE__*/React.createElement("button", {
+    key: t,
+    className: "chip",
+    onClick: () => setStockType(t),
+    style: {
+      background: stockType === t ? C.lime : "rgba(255,255,255,0.1)",
+      border: `1.5px solid ${stockType === t ? C.lime : "rgba(255,255,255,0.2)"}`,
+      color: stockType === t ? C.green : "rgba(255,255,255,0.85)",
+      borderRadius: 20,
+      padding: "6px 14px",
+      fontSize: 12,
+      fontWeight: stockType === t ? 700 : 400
+    }
+  }, t === "cases" ? "📦 Cases (1/min)" : "📋 Units (9/min)")))), showBackup && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#0f2318",
+      padding: "14px 16px",
+      borderBottom: `2px solid ${C.lime}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: C.lime,
+      fontWeight: 700,
+      marginBottom: 12
+    }
+  }, "☁️ Cloud Save & Restore"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: cloudSave,
+    style: {
+      flex: 1,
+      background: C.lime,
+      border: "none",
+      color: C.green,
+      borderRadius: 8,
+      padding: "12px",
+      fontSize: 13,
+      fontWeight: 700,
+      cursor: "pointer"
+    }
+  }, "☁️ Save to Cloud"), /*#__PURE__*/React.createElement("button", {
+    onClick: cloudLoad,
+    style: {
+      flex: 1,
+      background: "#2980b9",
+      border: "none",
+      color: "#fff",
+      borderRadius: 8,
+      padding: "12px",
+      fontSize: 13,
+      fontWeight: 700,
+      cursor: "pointer"
+    }
+  }, "⬇️ Load from Cloud")), restoreMsg && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: restoreMsg.startsWith("✓") ? "#c8e32a" : restoreMsg.startsWith("✗") ? "#ff6b6b" : "rgba(255,255,255,0.7)",
+      marginBottom: 10,
+      textAlign: "center"
+    }
+  }, restoreMsg), /*#__PURE__*/React.createElement("div", {
+    style: {
+      borderTop: "1px solid rgba(255,255,255,0.15)",
+      paddingTop: 12,
+      marginTop: 4
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "rgba(255,255,255,0.5)",
+      marginBottom: 6
+    }
+  }, "Manual backup (fallback):"), /*#__PURE__*/React.createElement("button", {
+    onClick: copyBackup,
+    style: {
+      width: "100%",
+      background: "rgba(255,255,255,0.1)",
+      border: "1px solid rgba(255,255,255,0.2)",
+      color: "rgba(255,255,255,0.8)",
+      borderRadius: 8,
+      padding: "8px",
+      fontSize: 12,
+      cursor: "pointer",
+      marginBottom: 8
+    }
+  }, "📋 Show backup text"), restoreText && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("textarea", {
+    value: restoreText,
+    onChange: e => setRestoreText(e.target.value),
+    style: {
+      width: "100%",
+      height: 80,
+      borderRadius: 8,
+      border: `1.5px solid ${C.border}`,
+      padding: 10,
+      fontSize: 10,
+      fontFamily: "monospace",
+      resize: "none",
+      marginBottom: 8
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: doRestore,
+    style: {
+      width: "100%",
+      background: "#27ae60",
+      border: "none",
+      color: "#fff",
+      borderRadius: 8,
+      padding: "8px",
+      fontSize: 12,
+      fontWeight: 700,
+      cursor: "pointer"
+    }
+  }, "↩ Restore from text")))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      maxWidth: 680,
+      margin: "0 auto",
+      padding: "14px 14px 20px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 12,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...card,
+      marginBottom: 0,
+      borderTop: `3px solid ${C.teal}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: secLabel(C.teal)
+  }, "Available Hours"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 34,
+      fontWeight: 700,
+      color: C.teal,
+      lineHeight: 1
+    }
+  }, colleagues > 0 ? fmt(teamMins) : "—"), preMidMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 600,
+      color: "#5a78d4",
+      marginTop: 6
+    }
+  }, "🌙 Before midnight: ", fmt(preMidMins)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.muted,
+      marginTop: 5
+    }
+  }, colleagues > 0 ? `${colleagues} partner${colleagues > 1 ? "s" : ""}` : "Select partners"), colleagues > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 10,
+      display: "flex",
+      flexDirection: "column",
+      gap: 4
+    }
+  }, activeP.map((p, i) => {
+    const maxH = Math.max(...activeP.map(q => sel[q.name]));
+    return /*#__PURE__*/React.createElement("div", {
+      key: p.name,
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 7
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 64,
+        fontSize: 11,
+        color: C.text,
+        fontWeight: 500
+      }
+    }, p.name), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        background: C.bg,
+        borderRadius: 3,
+        height: 5
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: `${Math.round(sel[p.name] / maxH * 100)}%`,
+        height: "100%",
+        borderRadius: 3,
+        background: `hsl(${150 + i * 22 % 60},55%,42%)`
+      }
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 30,
+        fontSize: 11,
+        color: C.muted,
+        textAlign: "right"
+      }
+    }, sel[p.name], "h"));
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...card,
+      marginBottom: 0,
+      borderTop: `3px solid ${stColor}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: secLabel(stColor)
+  }, "Time Needed"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 34,
+      fontWeight: 700,
+      color: stColor,
+      lineHeight: 1
+    }
+  }, totalNeeded > 0 ? fmt(totalNeeded) : "—"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.muted,
+      marginTop: 5
+    }
+  }, totalNeeded > 0 ? `${stLabel}${colleagues > 0 ? ` · ~${fmt(Math.ceil(totalNeeded / colleagues))}/partner` : ""}` : "Enter quantities"), totalNeeded > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 8,
+      display: "flex",
+      flexDirection: "column",
+      gap: 2
+    }
+  }, ambMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "📦 Ambient: ", fmt(ambMins)), freshMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🌿 Fresh: ", fmt(freshMins)), spotMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🔍 Spotting: ", fmt(spotMins), " (", spotBase, " units)"), lehMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "📦 Lehnams: ", fmt(lehMins)), w3Mins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🧺 W3: ", fmt(w3Mins)), lorryMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🚚 Lorries: ", fmt(lorryMins)), sandMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🥪 Sandwiches: 25m"), rmMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🍱 Ready Meals: ", fmt(rmMins)), setupMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "⚙️ Ecomm Setup: 40m"), ecommSolo > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🛒 Ecomm: ", fmt(ecommSolo)), spMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🗑️ Spoilage: ", fmt(spMins)), cardMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "📦 Cardboard: 2h"), pickMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🧹 Pick Up: ", fmt(pickMins)), drMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🥤 Drinks Backstock: 1h"), crMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🥔 Crisps Backstock: 30m"), ambFMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🏪 Ambient Face Up: 10h"), chlFMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "❄️ Chilled Face Up: 3h"), routeMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🛣️ Clearing Routes: 30m"), floorMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🏬 Clear Shop Floor: 1h"), frozenMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🧊 Frozen: ", fmt(frozenMins)), multiMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "📱 Multimedia: ", fmt(multiMins)), flowersHortMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🌸 Flowers & Horticultural: 1h"), exceptionsMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "❗ Exceptions: 1h"), tidyFrvMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🥬 Tidy F&V + Rackaway: 45m"), shiftAdminMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "📋 Shift Admin: 20m"), dekitMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "🌅 4am Dekit: ", fmt(dekitMins)), multiMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "📱 Multimedia: ", fmt(multiMins), " (", multiPartners, " partners)")), totalNeeded > 0 && colleagues > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      fontSize: 11,
+      color: C.muted,
+      marginBottom: 4
+    }
+  }, /*#__PURE__*/React.createElement("span", null, util, "% utilised"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: slack >= 0 ? C.teal : C.red
+    }
+  }, slack >= 0 ? `+${fmt(slack)} spare` : `${fmt(Math.abs(slack))} over`)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.bg,
+      borderRadius: 4,
+      height: 8,
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: `${Math.min(100, util)}%`,
+      height: "100%",
+      background: stColor,
+      borderRadius: 4,
+      transition: "width .4s"
+    }
+  }))))), /*#__PURE__*/React.createElement("div", {
+    style: card
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: secLabel()
+  }, "Partners on Shift"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.muted
+    }
+  }, colleagues, " selected")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fill,minmax(88px,1fr))",
+      gap: 7
+    }
+  }, PARTNERS.map(p => {
+    const on = !!sel[p.name];
+    const sd = sel[p.name];
+    return /*#__PURE__*/React.createElement("div", {
+      key: p.name,
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: 3
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      className: "chip",
+      onClick: () => {
+        setSel(prev => {
+          const n = {
+            ...prev
+          };
+          if (n[p.name]) delete n[p.name];else n[p.name] = p.h[p.h.length - 1];
+          return n;
+        });
+        setSelPm(prev => {
+          const n = {
+            ...prev
+          };
+          if (n[p.name]) delete n[p.name];else n[p.name] = p.pm[p.pm.length - 1];
+          return n;
+        });
+      },
+      style: {
+        background: on ? C.green : C.bg,
+        border: `1.5px solid ${on ? C.green : C.border}`,
+        color: on ? "#fff" : C.text,
+        borderRadius: 20,
+        padding: "7px 8px",
+        fontSize: 12,
+        fontWeight: on ? 600 : 400,
+        textAlign: "center",
+        minWidth: 72
+      }
+    }, on ? "✓ " : "", p.name, p.h.length === 1 ? /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 10,
+        color: on ? C.lime + "cc" : C.dim,
+        marginLeft: 4
+      }
+    }, p.h[0], "h") : ""), on && p.h.length > 1 && /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 3
+      }
+    }, p.h.map(h => /*#__PURE__*/React.createElement("button", {
+      key: h,
+      className: "chip",
+      onClick: () => setSel(prev => ({
+        ...prev,
+        [p.name]: h
+      })),
+      style: {
+        flex: 1,
+        background: sd === h ? C.lime : C.bg,
+        border: `1.5px solid ${sd === h ? C.limeDark : C.border}`,
+        color: sd === h ? C.green : C.muted,
+        borderRadius: 6,
+        padding: "3px 4px",
+        fontSize: 10,
+        fontWeight: sd === h ? 700 : 400
+      }
+    }, h, "h"))), on && p.h.length === 1 && /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: "center",
+        fontSize: 10,
+        color: C.muted
+      }
+    }, p.h[0], "h fixed"), on && p.pm && p.pm.length > 1 && /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 3
+      }
+    }, p.pm.map(m => /*#__PURE__*/React.createElement("button", {
+      key: m,
+      className: "chip",
+      onClick: () => setSelPm(prev => ({
+        ...prev,
+        [p.name]: m
+      })),
+      style: {
+        flex: 1,
+        background: selPm[p.name] === m ? "#5a78d4" : C.bg,
+        border: `1.5px solid ${selPm[p.name] === m ? "#5a78d4" : C.border}`,
+        color: selPm[p.name] === m ? "#fff" : C.muted,
+        borderRadius: 5,
+        padding: "2px 3px",
+        fontSize: 9,
+        fontWeight: selPm[p.name] === m ? 700 : 400
+      }
+    }, fmt(m), " 🌙"))), on && p.pm && p.pm.length === 1 && /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: "center",
+        fontSize: 9,
+        color: "#5a78d4aa"
+      }
+    }, fmt(p.pm[0]), " 🌙"));
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...card,
+      borderTop: `3px solid #e07800`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: secLabel("#e07800")
+  }, "Ambient Spotting"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.muted
+    }
+  }, "2.3 sec per unit")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "right"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 26,
+      fontWeight: 700,
+      color: "#e07800"
+    }
+  }, spotMins > 0 ? fmt(spotMins) : "—"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, spotBase, " units ", spotUnits === "" ? "(auto)" : "(manual)"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      textTransform: "uppercase",
+      letterSpacing: 1,
+      marginBottom: 4
+    }
+  }, "Override Units (leave blank to use ambient total)"), /*#__PURE__*/React.createElement(SimpleInput, {
+    value: spotUnits,
+    onChange: setSpotUnits,
+    placeholder: `Auto: ${ambQty}`,
+    style: {
+      ...inp(spotUnits !== "" && qn(spotUnits) > 0, "#e07800"),
+      fontSize: 16
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...card,
+      borderTop: `3px solid #e67e22`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: secLabel("#e67e22")
+  }, "Lehnams"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.muted
+    }
+  }, "Crisps & toilet rolls · 1h per pallet")), lehMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 26,
+      fontWeight: 700,
+      color: "#e67e22"
+    }
+  }, fmt(lehMins))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      textTransform: "uppercase",
+      letterSpacing: 1,
+      marginBottom: 6
+    }
+  }, "Number of Pallets"), /*#__PURE__*/React.createElement(SimpleInput, {
+    value: lehPallets,
+    onChange: setLehPallets,
+    placeholder: "0",
+    style: {
+      ...inp(qn(lehPallets) > 0, "#e67e22"),
+      fontSize: 16
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...card,
+      borderTop: `3px solid #27ae60`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: secLabel("#27ae60")
+  }, "W3 Handed Over"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.muted
+    }
+  }, "1h per cage")), w3Mins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 26,
+      fontWeight: 700,
+      color: "#27ae60"
+    }
+  }, fmt(w3Mins))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      textTransform: "uppercase",
+      letterSpacing: 1,
+      marginBottom: 6
+    }
+  }, "Number of Cages"), /*#__PURE__*/React.createElement(SimpleInput, {
+    value: w3Cages,
+    onChange: setW3Cages,
+    placeholder: "0",
+    style: {
+      ...inp(qn(w3Cages) > 0, "#27ae60"),
+      fontSize: 16
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...card,
+      borderTop: `3px solid #00b4d8`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: secLabel("#00b4d8")
+  }, "Frozen"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.muted
+    }
+  }, "1h per cage")), frozenMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 26,
+      fontWeight: 700,
+      color: "#00b4d8"
+    }
+  }, fmt(frozenMins))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      textTransform: "uppercase",
+      letterSpacing: 1,
+      marginBottom: 6
+    }
+  }, "Number of Cages"), /*#__PURE__*/React.createElement(SimpleInput, {
+    value: frozenCages,
+    onChange: setFrozenCages,
+    placeholder: "0",
+    style: {
+      ...inp(qn(frozenCages) > 0, "#00b4d8"),
+      fontSize: 16
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: card
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: secLabel()
+  }, "Delivery — ", stockType === "cases" ? "Cases" : "Units", " by Dept"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setARows(r => [...r, {
+      dept: "",
+      qty: ""
+    }]),
+    style: {
+      background: C.lime,
+      border: "none",
+      color: C.green,
+      borderRadius: 20,
+      padding: "6px 14px",
+      fontSize: 12,
+      fontWeight: 700
+    }
+  }, "+ Add")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 80px 90px 26px",
+      gap: 8,
+      marginBottom: 8,
+      paddingBottom: 8,
+      borderBottom: `1px solid ${C.border}`
+    }
+  }, ["Department", stockType === "cases" ? "Cases" : "Units", "Est. Time", ""].map(h => /*#__PURE__*/React.createElement("div", {
+    key: h,
+    style: {
+      fontSize: 10,
+      fontWeight: 700,
+      color: C.green,
+      letterSpacing: 1,
+      textTransform: "uppercase"
+    }
+  }, h))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      fontWeight: 700,
+      color: C.green,
+      letterSpacing: 2,
+      textTransform: "uppercase",
+      marginBottom: 7
+    }
+  }, "Ambient"), aRows.map((row, i) => /*#__PURE__*/React.createElement(DepRow, {
+    key: row.dept || `a-${i}`,
+    row: row,
+    rate: rate,
+    onCommit: v => commitARow(i, v),
+    onRemove: () => removeARow(i)
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      fontWeight: 700,
+      color: C.light,
+      letterSpacing: 2,
+      textTransform: "uppercase",
+      marginTop: 12,
+      marginBottom: 7,
+      paddingTop: 10,
+      borderTop: `1px solid ${C.border}`
+    }
+  }, "Fresh"), fRows.map((row, i) => /*#__PURE__*/React.createElement(DepRow, {
+    key: row.dept || `f-${i}`,
+    row: row,
+    rate: rate,
+    accent: "#f0f9f4",
+    onCommit: v => commitFRow(i, v),
+    onRemove: () => removeFRow(i)
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 80px 90px 26px",
+      gap: 8,
+      marginTop: 12,
+      paddingTop: 12,
+      borderTop: `2px solid ${C.green}22`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: C.green,
+      textTransform: "uppercase"
+    }
+  }, "Total"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      fontWeight: 700,
+      color: C.green,
+      textAlign: "center"
+    }
+  }, totalQty), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      color: C.teal,
+      textAlign: "center"
+    }
+  }, stockMins > 0 ? fmt(stockMins) : "—"), /*#__PURE__*/React.createElement("div", null)), totalQty > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14,
+      paddingTop: 12,
+      borderTop: `1px solid ${C.border}`,
+      display: "flex",
+      flexDirection: "column",
+      gap: 5
+    }
+  }, allRows.filter(r => qn(r.qty) > 0).map((r, i) => {
+    const pct = Math.round(qn(r.qty) / totalQty * 100);
+    return /*#__PURE__*/React.createElement("div", {
+      key: r.dept,
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 8
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 150,
+        fontSize: 11,
+        color: C.text,
+        wordBreak: "break-word",
+        lineHeight: 1.3
+      }
+    }, r.dept), /*#__PURE__*/React.createElement("div", {
+      style: {
+        flex: 1,
+        background: C.bg,
+        borderRadius: 3,
+        height: 7
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: `${pct}%`,
+        height: "100%",
+        borderRadius: 3,
+        background: `hsl(${140 + i * 22 % 80},52%,${40 + i % 3 * 7}%)`
+      }
+    })), /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 40,
+        fontSize: 11,
+        color: C.muted,
+        textAlign: "right"
+      }
+    }, r.qty), /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: 30,
+        fontSize: 11,
+        color: C.dim,
+        textAlign: "right"
+      }
+    }, pct, "%"));
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...card,
+      borderTop: `3px solid #e91e8c`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: secLabel("#e91e8c")
+  }, "Splitting"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.bg,
+      borderRadius: 10,
+      padding: "12px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      marginBottom: 2
+    }
+  }, "🥪 Sandwiches"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      marginBottom: 10
+    }
+  }, "Fixed · 25 min"), /*#__PURE__*/React.createElement(Toggle, {
+    val: sandwich,
+    onChange: setSandwich,
+    options: [{
+      v: true,
+      l: "Yes"
+    }, {
+      v: false,
+      l: "No"
+    }],
+    color: "#e91e8c"
+  }), sandwich && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 8,
+      fontSize: 22,
+      fontWeight: 700,
+      color: "#e91e8c"
+    }
+  }, "25m")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.bg,
+      borderRadius: 10,
+      padding: "12px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      marginBottom: 2
+    }
+  }, "🍱 Ready Meals"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      marginBottom: 10
+    }
+  }, "8m 15s per cage"), /*#__PURE__*/React.createElement(SimpleInput, {
+    value: rmCages,
+    onChange: setRmCages,
+    placeholder: "0 cages",
+    style: {
+      ...inp(qn(rmCages) > 0, "#e91e8c"),
+      fontSize: 16
+    }
+  }), qn(rmCages) > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 8,
+      fontSize: 22,
+      fontWeight: 700,
+      color: "#e91e8c"
+    }
+  }, fmt(rmMins))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...card,
+      borderTop: `3px solid #ff9800`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: secLabel("#ff9800")
+  }, "Partner Multimedia"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.muted
+    }
+  }, "40 min per partner")), multiMins > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "right"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 26,
+      fontWeight: 700,
+      color: "#ff9800"
+    }
+  }, fmt(multiMins)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, multiPartners, " partner", qn(multiPartners) !== 1 ? "s" : ""))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      textTransform: "uppercase",
+      letterSpacing: 1,
+      marginBottom: 6
+    }
+  }, "Number of Partners"), /*#__PURE__*/React.createElement(SimpleInput, {
+    value: multiPartners,
+    onChange: setMultiPartners,
+    placeholder: "0",
+    style: {
+      ...inp(qn(multiPartners) > 0, "#ff9800"),
+      fontSize: 16
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...card,
+      borderTop: `3px solid #2980b9`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: secLabel("#2980b9")
+  }, "Other Tasks"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, [{
+    label: "🗑️ Spoilage",
+    sub: "Sort & clear",
+    content: /*#__PURE__*/React.createElement(Toggle, {
+      val: spoilage,
+      onChange: setSpoilage,
+      options: [{
+        v: 0,
+        l: "Off"
+      }, {
+        v: 15,
+        l: "15m"
+      }, {
+        v: 20,
+        l: "20m"
+      }],
+      color: "#2980b9"
+    })
+  }, {
+    label: "📦 Cardboard",
+    sub: "Inc. bale · 2 hours",
+    content: /*#__PURE__*/React.createElement(Toggle, {
+      val: cardboard,
+      onChange: setCardboard,
+      options: [{
+        v: false,
+        l: "No"
+      }, {
+        v: true,
+        l: "Yes"
+      }],
+      color: "#2980b9"
+    })
+  }, {
+    label: "🧹 Pick Up",
+    sub: "Inc. racking away",
+    content: /*#__PURE__*/React.createElement(Toggle, {
+      val: pickup,
+      onChange: setPickup,
+      options: [{
+        v: 0,
+        l: "Off"
+      }, {
+        v: 60,
+        l: "1h"
+      }, {
+        v: 90,
+        l: "1.5h"
+      }],
+      color: "#2980b9"
+    })
+  }, {
+    label: "🥤 Drinks Backstock",
+    sub: "Bring down, work & return · 1h",
+    content: /*#__PURE__*/React.createElement(Toggle, {
+      val: drinksBack,
+      onChange: setDrinksBack,
+      options: [{
+        v: false,
+        l: "No"
+      }, {
+        v: true,
+        l: "Yes"
+      }],
+      color: "#2980b9"
+    })
+  }, {
+    label: "🥔 Crisps Backstock",
+    sub: "30 mins",
+    content: /*#__PURE__*/React.createElement(Toggle, {
+      val: crispsBack,
+      onChange: setCrispsBack,
+      options: [{
+        v: false,
+        l: "No"
+      }, {
+        v: true,
+        l: "Yes"
+      }],
+      color: "#2980b9"
+    })
+  }, {
+    label: "🏪 Ambient Face Up",
+    sub: "10 hours",
+    content: /*#__PURE__*/React.createElement(Toggle, {
+      val: ambFaceup,
+      onChange: setAmbFaceup,
+      options: [{
+        v: false,
+        l: "No"
+      }, {
+        v: true,
+        l: "Yes"
+      }],
+      color: "#2980b9"
+    })
+  }, {
+    label: "❄️ Chilled Face Up",
+    sub: "3 hours",
+    content: /*#__PURE__*/React.createElement(Toggle, {
+      val: chlFaceup,
+      onChange: setChlFaceup,
+      options: [{
+        v: false,
+        l: "No"
+      }, {
+        v: true,
+        l: "Yes"
+      }],
+      color: "#2980b9"
+    })
+  }, {
+    label: "🛣️ Clearing Routes",
+    sub: "30 mins",
+    content: /*#__PURE__*/React.createElement(Toggle, {
+      val: clearRoutes,
+      onChange: setClearRoutes,
+      options: [{
+        v: false,
+        l: "No"
+      }, {
+        v: true,
+        l: "Yes"
+      }],
+      color: "#2980b9"
+    })
+  }, {
+    label: "🏬 Clear Shop Floor",
+    sub: "Inc. Zorba strips · 1 hour",
+    content: /*#__PURE__*/React.createElement(Toggle, {
+      val: clearFloor,
+      onChange: setClearFloor,
+      options: [{
+        v: false,
+        l: "No"
+      }, {
+        v: true,
+        l: "Yes"
+      }],
+      color: "#2980b9"
+    })
+  }, {
+    label: "🌅 4am Dekit",
+    sub: "45 min or 1 hour",
+    content: /*#__PURE__*/React.createElement(Toggle, {
+      val: dekitOption,
+      onChange: setDekitOption,
+      options: [{
+        v: 0,
+        l: "Off"
+      }, {
+        v: 45,
+        l: "45m"
+      }, {
+        v: 60,
+        l: "1h"
+      }],
+      color: "#2980b9"
+    })
+  }].map(item => /*#__PURE__*/React.createElement("div", {
+    key: item.label,
+    style: {
+      background: C.bg,
+      borderRadius: 10,
+      padding: "12px 14px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 600
+    }
+  }, item.label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, item.sub)), item.content)), [{
+    label: "🌸 Flowers & Horticultural",
+    sub: "1 hour",
+    val: flowersHort,
+    setVal: setFlowersHort
+  }, {
+    label: "❗ Exceptions",
+    sub: "1 hour",
+    val: exceptions,
+    setVal: setExceptions
+  }, {
+    label: "🥬 Tidy F&V & Rackaway",
+    sub: "45 mins",
+    val: tidyFrv,
+    setVal: setTidyFrv
+  }, {
+    label: "📋 Start of Shift Admin",
+    sub: "20 mins",
+    val: shiftAdmin,
+    setVal: setShiftAdmin
+  }].map(item => /*#__PURE__*/React.createElement("div", {
+    key: item.label,
+    style: {
+      background: C.bg,
+      borderRadius: 10,
+      padding: "12px 14px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 600
+    }
+  }, item.label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, item.sub)), /*#__PURE__*/React.createElement(Toggle, {
+    val: item.val,
+    onChange: item.setVal,
+    options: [{
+      v: false,
+      l: "No"
+    }, {
+      v: true,
+      l: "Yes"
+    }],
+    color: "#2980b9"
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: C.bg,
+      borderRadius: 10,
+      padding: "12px 14px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 600
+    }
+  }, "📱 Partner Multimedia"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "40 min per partner · ", qn(multimediaPartners) > 0 ? fmt(multiMins) : "")), /*#__PURE__*/React.createElement(SimpleInput, {
+    value: String(multimediaPartners || ""),
+    onChange: v => setMultimediaPartners(parseInt(v) || 0),
+    placeholder: "0",
+    style: {
+      ...inp(qn(multimediaPartners) > 0, "#2980b9"),
+      fontSize: 16,
+      width: 80,
+      textAlign: "center"
+    }
+  })))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...card,
+      borderTop: `3px solid #5a78d4`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: secLabel("#5a78d4")
+  }, "Setting Up Ecomm"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.muted
+    }
+  }, "Fixed · 40 minutes")), ecommSetup && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 24,
+      fontWeight: 700,
+      color: "#5a78d4"
+    }
+  }, "40m")), /*#__PURE__*/React.createElement(Toggle, {
+    val: ecommSetup,
+    onChange: setEcommSetup,
+    options: [{
+      v: true,
+      l: "Yes"
+    }, {
+      v: false,
+      l: "No"
+    }],
+    color: "#5a78d4"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...card,
+      borderTop: `3px solid #5a78d4`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: secLabel("#5a78d4")
+  }, "Ecomm Pickings"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.muted,
+      marginBottom: 14
+    }
+  }, "230 items/hr per picker"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 12,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      textTransform: "uppercase",
+      letterSpacing: 1,
+      marginBottom: 6
+    }
+  }, "Total Items"), /*#__PURE__*/React.createElement(SimpleInput, {
+    value: ecommItems,
+    onChange: setEcommItems,
+    placeholder: "0",
+    style: {
+      ...inp(qn(ecommItems) > 0, "#5a78d4"),
+      fontSize: 16
+    }
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      textTransform: "uppercase",
+      letterSpacing: 1,
+      marginBottom: 6
+    }
+  }, "No. of Pickers"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 5,
+      flexWrap: "wrap"
+    }
+  }, [1, 2, 3, 4, 5, 6].map(n => /*#__PURE__*/React.createElement("button", {
+    key: n,
+    className: "chip",
+    onClick: () => setEcommPickers(n),
+    style: {
+      flex: 1,
+      background: ecommPickers === n ? C.green : C.bg,
+      border: `1.5px solid ${ecommPickers === n ? C.green : C.border}`,
+      color: ecommPickers === n ? "#fff" : C.text,
+      borderRadius: 7,
+      padding: "8px 2px",
+      fontSize: 13,
+      fontWeight: ecommPickers === n ? 700 : 400
+    }
+  }, n))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      marginTop: 8
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, "Custom:"), /*#__PURE__*/React.createElement(SimpleInput, {
+    value: String(ecommPickers),
+    onChange: v => setEcommPickers(Math.max(1, parseInt(v) || 1)),
+    style: {
+      ...inp(![1, 2, 3, 4, 5, 6].includes(ecommPickers), "#5a78d4"),
+      fontSize: 16
+    }
+  })))), qn(ecommItems) > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr 1fr",
+      gap: 8
+    }
+  }, [{
+    label: "Solo Time",
+    val: fmt(ecommSolo),
+    sub: "1 picker",
+    color: "#5a78d4"
+  }, {
+    label: "Team Time",
+    val: fmt(ecommTeam),
+    sub: `${ecommPickers} picker${ecommPickers > 1 ? "s" : ""}`,
+    color: C.teal
+  }, {
+    label: "Per Picker",
+    val: `${Math.ceil(qn(ecommItems) / ecommPickers)}`,
+    sub: "items each",
+    color: C.green
+  }].map(c => /*#__PURE__*/React.createElement("div", {
+    key: c.label,
+    style: {
+      background: C.bg,
+      borderRadius: 8,
+      padding: "11px 10px",
+      borderTop: `3px solid ${c.color}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      fontWeight: 700,
+      color: C.muted,
+      textTransform: "uppercase",
+      letterSpacing: 1,
+      marginBottom: 5
+    }
+  }, c.label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 20,
+      fontWeight: 700,
+      color: c.color
+    }
+  }, c.val), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      marginTop: 3
+    }
+  }, c.sub))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...card,
+      borderTop: `3px solid #9b59b6`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: secLabel("#9b59b6")
+  }, "Lorry Unloads"), [{
+    label: "First Unload",
+    time: "20:30",
+    on: l1On,
+    setOn: setL1On,
+    dekit: l1Dekit,
+    setDekit: setL1Dekit,
+    mins: l1Mins,
+    partners: l1Partners,
+    idx: 1
+  }, {
+    label: "Second Unload",
+    time: "00:30",
+    on: l2On,
+    setOn: setL2On,
+    dekit: l2Dekit,
+    setDekit: setL2Dekit,
+    mins: l2Mins,
+    partners: l2Partners,
+    idx: 2
+  }].map((lorry, li) => /*#__PURE__*/React.createElement("div", {
+    key: li,
+    style: {
+      background: C.bg,
+      borderRadius: 10,
+      padding: "14px",
+      marginBottom: li === 0 ? 10 : 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      color: "#9b59b6"
+    }
+  }, lorry.label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: C.muted
+    }
+  }, "🕐 ", lorry.time)), lorry.on && /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "right"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 22,
+      fontWeight: 700,
+      color: "#9b59b6"
+    }
+  }, fmt(lorry.mins)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted
+    }
+  }, lorry.partners.length > 0 ? `${lorry.partners.length} partner${lorry.partners.length > 1 ? "s" : ""} × ${lorry.dekit ? "1h" : "40m"}` : "Assign partners"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 10,
+      marginBottom: lorry.on ? 12 : 0
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      textTransform: "uppercase",
+      letterSpacing: 1,
+      marginBottom: 6
+    }
+  }, "On tonight?"), /*#__PURE__*/React.createElement(Toggle, {
+    val: lorry.on,
+    onChange: lorry.setOn,
+    options: [{
+      v: true,
+      l: "Yes"
+    }, {
+      v: false,
+      l: "No"
+    }],
+    color: "#9b59b6"
+  })), lorry.on && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      textTransform: "uppercase",
+      letterSpacing: 1,
+      marginBottom: 6
+    }
+  }, "Dekit?"), /*#__PURE__*/React.createElement(Toggle, {
+    val: lorry.dekit,
+    onChange: lorry.setDekit,
+    options: [{
+      v: true,
+      l: "Yes · 1h"
+    }, {
+      v: false,
+      l: "No · 40m"
+    }],
+    color: "#9b59b6"
+  }))), lorry.on && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.muted,
+      textTransform: "uppercase",
+      letterSpacing: 1,
+      marginBottom: 7
+    }
+  }, "Assign Partners (", lorry.partners.length, "/2)"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 6
+    }
+  }, (colleagues > 0 ? activeP : PARTNERS).map(p => {
+    const assigned = lorry.partners.includes(p.name);
+    const disabled = !assigned && lorry.partners.length >= 2;
+    return /*#__PURE__*/React.createElement("button", {
+      key: p.name,
+      className: "chip",
+      onClick: !disabled ? () => toggleLP(lorry.idx, p.name) : undefined,
+      style: {
+        background: assigned ? "#9b59b6" : disabled ? C.bg : "#fff",
+        border: `1.5px solid ${assigned ? "#9b59b6" : C.border}`,
+        color: assigned ? "#fff" : disabled ? C.dim : C.text,
+        borderRadius: 20,
+        padding: "5px 11px",
+        fontSize: 12,
+        fontWeight: assigned ? 600 : 400,
+        opacity: disabled ? .4 : 1
+      }
+    }, p.name);
+  }))))))));
 }
 
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(React.createElement(App));
-document.getElementById('loading').style.display='none';
-</script>
+        try {
+          var container = document.getElementById('root');
+          var root = ReactDOM.createRoot(container);
+          root.render(React.createElement(App));
+          document.getElementById('loading').style.display = 'none';
+        } catch(e) {
+          document.querySelector('#loading p').textContent = 'Error: ' + e.message;
+          console.error(e);
+        }
+      })();
+    }
+  </script>
 </body>
 </html>
